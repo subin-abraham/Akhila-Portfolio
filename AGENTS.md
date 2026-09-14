@@ -1,6 +1,6 @@
 ## Coding Rules (React / Next.js / TypeScript)
 
-> Condensed from `React_-_Nextjs_PR_Review_Checklist.md` (project root), which has the full rule set with ❌/✅ code examples for every item — look up the rule number there when you need more detail. **[BLOCK]** = never violate; it breaks the build, security, or accessibility. **[WARN]** = follow by default; only deviate with an inline comment explaining why.
+> Condensed from `React_-_Nextjs_PR_Review_Checklist.md` (project root), which has the full rule set with ❌/✅ code examples for every item — look up the rule number there when you need more detail. **[BLOCK]** = never violate; it breaks the build, security, or accessibility. **[WARN]** = follow by default; only deviate when justified. See **11.0** for the comment policy: no application comments except above a genuinely complex method.
 >
 > This project is currently an early-stage Next.js App Router site with no shared API client, auth, i18n library, or `features/` folder structure yet. The rules below for those areas describe the convention to establish the moment you introduce that kind of code (e.g. the first HTTP call should go through a new shared client, not scattered `fetch`s).
 
@@ -56,7 +56,7 @@
 - **[WARN]** Prefer a data-fetching library (React Query/SWR) or a Server Component fetch over manual `useEffect` + `useState` for display data. (5.4)
 - **[WARN]** Don't nest `.then()` chains inside an effect — extract a named async function and call it. (5.5)
 - **[WARN]** Clear any `setTimeout`/`setInterval` in the effect's cleanup. (5.6)
-- **[BLOCK]** `useEffect` dependency arrays must be exhaustive; disabling `react-hooks/exhaustive-deps` requires an inline comment explaining why it's safe. (5.7)
+- **[BLOCK]** `useEffect` dependency arrays must be exhaustive; disabling `react-hooks/exhaustive-deps` requires a comment above that effect explaining why it's safe (see 11.0). (5.7)
 
 ### 6. Routing (Next.js App Router)
 - **[BLOCK]** Guard new authenticated route segments via middleware or a layout-level session check — never rely on the page component alone. (6.1)
@@ -95,9 +95,10 @@
 - **[WARN]** Use the project's `@/*` path alias instead of long relative imports; don't add a new alias without updating `tsconfig.json`. (10.5)
 
 ### 11. Code Hygiene
+- **[BLOCK]** Do not add comments in application code. Only comment a method when it is genuinely complex; place that comment directly above the method and nowhere else (no inline, end-of-line, or block comments inside bodies). Prefer clear names and structure over narration. (11.0)
 - **[WARN]** Follow Prettier/ESLint formatting: 2-space indentation (no tabs), single quotes for strings (double quotes in JSX attributes), required semicolons, ~100-char line length, no trailing whitespace, single trailing newline per file. (11.1–11.6)
-- **[WARN]** Commented-out code needs a comment explaining why it's kept (temporary workaround, pending verification, etc.). (11.7)
-- **[WARN]** `TODO`/`FIXME` comments must reference a tracking issue id. (11.8)
+- **[WARN]** Do not leave commented-out code; delete it. If a temporary keep is unavoidable, treat it as a complex-method exception and document the reason only in a comment above the enclosing method. (11.7)
+- **[WARN]** `TODO`/`FIXME` must live only in a comment above a complex method and must reference a tracking issue id. (11.8)
 
 ### 12. Commit & PR Hygiene
 - **[WARN]** Commit messages start with the ticket ID, then a brief description. (12.1)
