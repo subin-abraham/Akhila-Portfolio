@@ -1,4 +1,3 @@
-import type { SectionHighlightTarget } from '@/types/home/homepage-section';
 import type { SocialPlatform } from '@/types/home/social';
 
 export interface AdminHomepageContent {
@@ -7,16 +6,6 @@ export interface AdminHomepageContent {
   intro: string;
   ctaLabel: string;
   ctaHref: string;
-}
-
-export interface AdminHomepageSection {
-  id: string;
-  sectionKey: string;
-  eyebrow: string;
-  title: string;
-  accentTitle: string | null;
-  description: string;
-  highlightTarget: SectionHighlightTarget;
 }
 
 export interface AdminNavLinkItem {
@@ -36,7 +25,6 @@ export interface AdminSocialLinkItem {
 export interface AdminWorkedWithItem {
   id: string;
   name: string;
-  logoUrl: string;
   sortOrder: number;
 }
 
@@ -120,10 +108,6 @@ export interface HeroEditorProps {
   homepage: AdminHomepageContent;
 }
 
-export interface SectionsEditorProps {
-  sections: AdminHomepageSection[];
-}
-
 export interface NavLinksEditorProps {
   items: AdminNavLinkItem[];
 }
@@ -162,7 +146,73 @@ export interface ToolsEditorProps {
 
 export interface FooterEditorProps {
   content: AdminFooterContent;
-  links: AdminFooterLinkItem[];
+  socialLinks: AdminSocialLinkItem[];
+}
+
+export type AdminContactEmailStatus = 'pending' | 'sent' | 'failed' | 'skipped';
+
+export interface AdminContactSubmissionItem {
+  id: string;
+  name: string;
+  email: string;
+  subject: string | null;
+  message: string;
+  ipAddress: string | null;
+  forwardedFor: string | null;
+  userAgent: string | null;
+  referer: string | null;
+  origin: string | null;
+  host: string | null;
+  acceptLanguage: string | null;
+  requestPath: string | null;
+  honeypotTriggered: boolean;
+  emailStatus: AdminContactEmailStatus;
+  emailError: string | null;
+  emailProviderId: string | null;
+  emailTo: string | null;
+  emailFrom: string | null;
+  emailSubject: string | null;
+  createdAt: string;
+  emailSentAt: string | null;
+}
+
+export interface AdminContactRateLimitEventItem {
+  id: string;
+  clientKey: string;
+  ipAddress: string | null;
+  forwardedFor: string | null;
+  userAgent: string | null;
+  referer: string | null;
+  origin: string | null;
+  host: string | null;
+  acceptLanguage: string | null;
+  requestPath: string | null;
+  attemptCount: number;
+  maxRequests: number;
+  windowMs: number;
+  resetAt: string | null;
+  remainingMs: number | null;
+  name: string | null;
+  email: string | null;
+  subject: string | null;
+  messagePreview: string | null;
+  messageLength: number | null;
+  createdAt: string;
+}
+
+export interface AdminContactDeliverySettings {
+  toEmail: string | null;
+  fromEmail: string | null;
+  resendConfigured: boolean;
+  challengeSecretConfigured: boolean;
+  rateLimitMaxRequests: number;
+  rateLimitWindowMs: number;
+}
+
+export interface ContactEditorProps {
+  settings: AdminContactDeliverySettings;
+  submissions: AdminContactSubmissionItem[];
+  rateLimitEvents: AdminContactRateLimitEventItem[];
 }
 
 export interface ContentDashboardCard {

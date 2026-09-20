@@ -1,3 +1,7 @@
+import {
+  filterLinksBySiteSettings,
+  getSiteSettings,
+} from '@/features/home/lib/site-settings';
 import { createClient } from '@/lib/supabase/server';
 import type { BlogPageData } from '@/types/components/blog-page';
 import type {
@@ -125,8 +129,15 @@ function mapFooterData(
 export async function getBlogPageData(): Promise<BlogPageData> {
   const supabase = await createClient();
 
-  const [postsResult, sectionsResult, navResult, socialResult, footerResult, footerLinksResult] =
-    await Promise.all([
+  const [
+    postsResult,
+    sectionsResult,
+    navResult,
+    socialResult,
+    footerResult,
+    footerLinksResult,
+    siteSettings,
+  ] = await Promise.all([
       supabase
         .from('blog_posts')
         .select('*')
@@ -143,6 +154,7 @@ export async function getBlogPageData(): Promise<BlogPageData> {
         .select('*')
         .order('column_sort_order', { ascending: true })
         .order('sort_order', { ascending: true }),
+      getSiteSettings(),
     ]);
 
   if (postsResult.error) {
@@ -182,11 +194,14 @@ export async function getBlogPageData(): Promise<BlogPageData> {
   return {
     section: mapHomepageSection(sectionRow),
     posts: (postsResult.data as BlogPostRow[]).map(mapBlogPost),
-    navLinks: (navResult.data as NavLinkRow[]).map(mapNavLink),
+    navLinks: filterLinksBySiteSettings(
+      (navResult.data as NavLinkRow[]).map(mapNavLink),
+      siteSettings,
+    ),
     socialLinks: (socialResult.data as SocialLinkRow[]).map(mapSocialLink),
     footer: mapFooterData(
       footerResult.data as FooterRow,
-      footerLinksResult.data as FooterLinkRow[]
+      filterLinksBySiteSettings(footerLinksResult.data as FooterLinkRow[], siteSettings),
     ),
   };
 }

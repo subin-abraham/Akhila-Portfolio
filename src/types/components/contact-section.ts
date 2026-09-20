@@ -1,8 +1,8 @@
 import type { HomepageSectionContent } from '@/types/home/homepage-section';
 
 export interface MathChallengePublic {
-  question: string;
   token: string;
+  imageDataUrl: string;
 }
 
 export interface ContactFormValues {

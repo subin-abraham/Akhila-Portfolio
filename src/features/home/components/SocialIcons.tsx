@@ -3,7 +3,7 @@ import { getSocialPlatformLabel } from '@/features/home/lib/social-platforms';
 
 const ICON_CLASS = 'h-4 w-4 fill-current';
 
-function SocialIcon({ platform }: SocialIconProps) {
+function SocialPlatformIcon({ platform }: SocialIconProps) {
   switch (platform) {
     case 'linkedin':
       return (
@@ -108,6 +108,8 @@ function SocialIcon({ platform }: SocialIconProps) {
   }
 }
 
+export { SocialPlatformIcon };
+
 export function SocialIcons({ links }: SocialIconsProps) {
   return (
     <ul className="flex items-center gap-4">
@@ -124,7 +126,7 @@ export function SocialIcons({ links }: SocialIconsProps) {
               title={label}
               className="inline-flex h-8 w-8 items-center justify-center text-home-muted transition-colors hover:text-white"
             >
-              <SocialIcon platform={link.platform} />
+              <SocialPlatformIcon platform={link.platform} />
             </a>
           </li>
         );

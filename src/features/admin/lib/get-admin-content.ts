@@ -1,12 +1,17 @@
+import {
+  CONTACT_RATE_LIMIT_MAX_REQUESTS,
+  CONTACT_RATE_LIMIT_WINDOW_MS,
+} from '@/features/home/lib/contact-rate-limit';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import type {
   BlogPostRow,
   CaseStudyRow,
+  ContactRateLimitEventRow,
+  ContactSubmissionRow,
   EducationRow,
-  FooterLinkRow,
   FooterRow,
   HomepageRow,
-  HomepageSectionRow,
   NavLinkRow,
   ProfessionalJourneyRow,
   SocialLinkRow,
@@ -17,11 +22,12 @@ import type {
 import type {
   AdminBlogPostItem,
   AdminCaseStudyItem,
+  AdminContactDeliverySettings,
+  AdminContactRateLimitEventItem,
+  AdminContactSubmissionItem,
   AdminEducationItem,
   AdminFooterContent,
-  AdminFooterLinkItem,
   AdminHomepageContent,
-  AdminHomepageSection,
   AdminNavLinkItem,
   AdminProfessionalJourneyItem,
   AdminSocialLinkItem,
@@ -30,6 +36,9 @@ import type {
   AdminWorkedWithItem,
 } from '@/types/components/admin-content';
 
+const DEFAULT_FROM_EMAIL = 'onboarding@resend.dev';
+const CONTACT_ADMIN_LIST_LIMIT = 200;
+
 function mapHomepage(row: HomepageRow): AdminHomepageContent {
   return {
     id: row.id,
@@ -37,18 +46,6 @@ function mapHomepage(row: HomepageRow): AdminHomepageContent {
     intro: row.intro,
     ctaLabel: row.cta_label,
     ctaHref: row.cta_href,
-  };
-}
-
-function mapSection(row: HomepageSectionRow): AdminHomepageSection {
-  return {
-    id: row.id,
-    sectionKey: row.section_key,
-    eyebrow: row.eyebrow,
-    title: row.title,
-    accentTitle: row.accent_title,
-    description: row.description,
-    highlightTarget: row.highlight_target,
   };
 }
 
@@ -74,7 +71,6 @@ function mapWorkedWith(row: WorkedWithRow): AdminWorkedWithItem {
   return {
     id: row.id,
     name: row.name,
-    logoUrl: row.logo_url,
     sortOrder: row.sort_order,
   };
 }
@@ -159,15 +155,58 @@ function mapFooter(row: FooterRow): AdminFooterContent {
   };
 }
 
-function mapFooterLink(row: FooterLinkRow): AdminFooterLinkItem {
+function mapContactSubmission(row: ContactSubmissionRow): AdminContactSubmissionItem {
   return {
     id: row.id,
-    columnKey: row.column_key,
-    columnTitle: row.column_title,
-    label: row.label,
-    href: row.href,
-    sortOrder: row.sort_order,
-    columnSortOrder: row.column_sort_order,
+    name: row.name,
+    email: row.email,
+    subject: row.subject,
+    message: row.message,
+    ipAddress: row.ip_address,
+    forwardedFor: row.forwarded_for,
+    userAgent: row.user_agent,
+    referer: row.referer,
+    origin: row.origin,
+    host: row.host,
+    acceptLanguage: row.accept_language,
+    requestPath: row.request_path,
+    honeypotTriggered: row.honeypot_triggered,
+    emailStatus: row.email_status,
+    emailError: row.email_error,
+    emailProviderId: row.email_provider_id,
+    emailTo: row.email_to,
+    emailFrom: row.email_from,
+    emailSubject: row.email_subject,
+    createdAt: row.created_at,
+    emailSentAt: row.email_sent_at,
+  };
+}
+
+function mapContactRateLimitEvent(
+  row: ContactRateLimitEventRow,
+): AdminContactRateLimitEventItem {
+  return {
+    id: row.id,
+    clientKey: row.client_key,
+    ipAddress: row.ip_address,
+    forwardedFor: row.forwarded_for,
+    userAgent: row.user_agent,
+    referer: row.referer,
+    origin: row.origin,
+    host: row.host,
+    acceptLanguage: row.accept_language,
+    requestPath: row.request_path,
+    attemptCount: row.attempt_count,
+    maxRequests: row.max_requests,
+    windowMs: row.window_ms,
+    resetAt: row.reset_at,
+    remainingMs: row.remaining_ms,
+    name: row.name,
+    email: row.email,
+    subject: row.subject,
+    messagePreview: row.message_preview,
+    messageLength: row.message_length,
+    createdAt: row.created_at,
   };
 }
 
@@ -191,16 +230,6 @@ export async function getAdminHomepage(): Promise<AdminHomepageContent> {
   const result = await supabase.from('homepage').select('*').limit(1).single();
   const row = await requireData('homepage', result);
   return mapHomepage(row as HomepageRow);
-}
-
-export async function getAdminSections(): Promise<AdminHomepageSection[]> {
-  const supabase = await createClient();
-  const result = await supabase
-    .from('homepage_sections')
-    .select('*')
-    .order('section_key', { ascending: true });
-  const rows = await requireData('homepage sections', result);
-  return (rows as HomepageSectionRow[]).map(mapSection);
 }
 
 export async function getAdminNavLinks(): Promise<AdminNavLinkItem[]> {
@@ -293,25 +322,44 @@ export async function getAdminToolsAndTechnology(): Promise<AdminToolsItem[]> {
   return (rows as ToolsAndTechnologyRow[]).map(mapTools);
 }
 
-export async function getAdminFooter(): Promise<{
-  content: AdminFooterContent;
-  links: AdminFooterLinkItem[];
-}> {
+export async function getAdminFooter(): Promise<AdminFooterContent> {
   const supabase = await createClient();
-  const [footerResult, linksResult] = await Promise.all([
-    supabase.from('footer').select('*').limit(1).single(),
-    supabase
-      .from('footer_links')
-      .select('*')
-      .order('column_sort_order', { ascending: true })
-      .order('sort_order', { ascending: true }),
-  ]);
-
+  const footerResult = await supabase.from('footer').select('*').limit(1).single();
   const footerRow = await requireData('footer', footerResult);
-  const linkRows = await requireData('footer links', linksResult);
+  return mapFooter(footerRow as FooterRow);
+}
 
+export function getAdminContactDeliverySettings(): AdminContactDeliverySettings {
   return {
-    content: mapFooter(footerRow as FooterRow),
-    links: (linkRows as FooterLinkRow[]).map(mapFooterLink),
+    toEmail: process.env.CONTACT_TO_EMAIL?.trim() || null,
+    fromEmail: process.env.CONTACT_FROM_EMAIL?.trim() || DEFAULT_FROM_EMAIL,
+    resendConfigured: Boolean(process.env.RESEND_API_KEY?.trim()),
+    challengeSecretConfigured: Boolean(process.env.CONTACT_CHALLENGE_SECRET?.trim()),
+    rateLimitMaxRequests: CONTACT_RATE_LIMIT_MAX_REQUESTS,
+    rateLimitWindowMs: CONTACT_RATE_LIMIT_WINDOW_MS,
   };
+}
+
+export async function getAdminContactSubmissions(): Promise<AdminContactSubmissionItem[]> {
+  const admin = createAdminClient();
+  const result = await admin
+    .from('contact_submissions')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(CONTACT_ADMIN_LIST_LIMIT);
+  const rows = await requireData('contact submissions', result);
+  return (rows as ContactSubmissionRow[]).map(mapContactSubmission);
+}
+
+export async function getAdminContactRateLimitEvents(): Promise<
+  AdminContactRateLimitEventItem[]
+> {
+  const admin = createAdminClient();
+  const result = await admin
+    .from('contact_rate_limit_events')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(CONTACT_ADMIN_LIST_LIMIT);
+  const rows = await requireData('contact rate limit events', result);
+  return (rows as ContactRateLimitEventRow[]).map(mapContactRateLimitEvent);
 }

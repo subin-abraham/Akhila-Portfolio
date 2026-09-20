@@ -3,14 +3,26 @@
 import {
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type KeyboardEvent,
 } from 'react';
+import { createPortal } from 'react-dom';
 
 import { ADMIN_FIELD_CLASS } from '@/features/admin/components/AdminFormPrimitives';
+import { SocialPlatformIcon } from '@/features/home/components/SocialIcons';
+import { isSocialPlatform } from '@/features/home/lib/social-platforms';
 import type { AdminPlatformLookupProps } from '@/types/components/admin-shell';
+
+interface ListboxPosition {
+  top?: number;
+  bottom?: number;
+  left: number;
+  width: number;
+  maxHeight: number;
+}
 
 export function AdminPlatformLookup({
   id,
@@ -25,6 +37,8 @@ export function AdminPlatformLookup({
 }: AdminPlatformLookupProps) {
   const listboxId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const listboxRef = useRef<HTMLUListElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const selectedOption = options.find((option) => option.value === defaultValue);
@@ -32,6 +46,8 @@ export function AdminPlatformLookup({
   const [query, setQuery] = useState(selectedOption?.label ?? '');
   const [value, setValue] = useState(defaultValue);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [position, setPosition] = useState<ListboxPosition | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const currentOption = options.find((option) => option.value === value);
   const filteredOptions = useMemo(() => {
@@ -45,10 +61,69 @@ export function AdminPlatformLookup({
   }, [options, query, currentOption?.label]);
 
   const valueRef = useRef(value);
+  const selectedPlatform = isSocialPlatform(value) ? value : null;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     valueRef.current = value;
   }, [value]);
+
+  function updatePosition() {
+    const trigger = triggerRef.current;
+    if (!trigger) {
+      return;
+    }
+
+    const rect = trigger.getBoundingClientRect();
+    const viewportPadding = 12;
+    const gap = 6;
+    const preferredHeight = 240;
+    const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
+    const spaceAbove = rect.top - viewportPadding;
+    const openUpward = spaceBelow < 160 && spaceAbove > spaceBelow;
+    const available = openUpward ? spaceAbove : spaceBelow;
+    const maxHeight = Math.max(120, Math.min(preferredHeight, available - gap));
+
+    if (openUpward) {
+      setPosition({
+        bottom: window.innerHeight - rect.top + gap,
+        left: rect.left,
+        width: rect.width,
+        maxHeight,
+      });
+      return;
+    }
+
+    setPosition({
+      top: rect.bottom + gap,
+      left: rect.left,
+      width: rect.width,
+      maxHeight,
+    });
+  }
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setPosition(null);
+      return;
+    }
+
+    updatePosition();
+
+    function handleReposition() {
+      updatePosition();
+    }
+
+    window.addEventListener('resize', handleReposition);
+    window.addEventListener('scroll', handleReposition, true);
+    return () => {
+      window.removeEventListener('resize', handleReposition);
+      window.removeEventListener('scroll', handleReposition, true);
+    };
+  }, [open, filteredOptions.length]);
 
   function closeLookup() {
     setOpen(false);
@@ -57,17 +132,24 @@ export function AdminPlatformLookup({
   }
 
   useEffect(() => {
+    if (!open) {
+      return;
+    }
+
     function handlePointerDown(event: MouseEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-        const current = options.find((option) => option.value === valueRef.current);
-        setQuery(current?.label ?? '');
+      const target = event.target as Node;
+      if (rootRef.current?.contains(target) || listboxRef.current?.contains(target)) {
+        return;
       }
+
+      setOpen(false);
+      const current = options.find((option) => option.value === valueRef.current);
+      setQuery(current?.label ?? '');
     }
 
     document.addEventListener('mousedown', handlePointerDown);
     return () => document.removeEventListener('mousedown', handlePointerDown);
-  }, [options]);
+  }, [open, options]);
 
   function selectOption(optionValue: string, optionLabel: string) {
     setValue(optionValue);
@@ -119,13 +201,83 @@ export function AdminPlatformLookup({
     }
   }
 
+  const listbox =
+    open && mounted && position ? (
+      <ul
+        ref={listboxRef}
+        id={listboxId}
+        role="listbox"
+        aria-label={label}
+        style={{
+          position: 'fixed',
+          top: position.top,
+          bottom: position.bottom,
+          left: position.left,
+          width: position.width,
+          maxHeight: position.maxHeight,
+        }}
+        className="z-[120] overflow-y-auto rounded-xl border border-white/25 bg-[#1c1c1c] py-1.5 shadow-[0_16px_40px_rgb(0_0_0/0.75)] ring-1 ring-home-accent/20"
+      >
+        {filteredOptions.length === 0 ? (
+          <li className="px-4 py-3 text-sm text-home-muted">No platforms found</li>
+        ) : (
+          filteredOptions.map((option, index) => {
+            const isActive = index === activeIndex;
+            const isSelected = option.value === value;
+            const optionPlatform = isSocialPlatform(option.value) ? option.value : null;
+
+            return (
+              <li key={option.value} role="option" aria-selected={isSelected}>
+                <button
+                  id={`${id}-option-${option.value}`}
+                  type="button"
+                  title={option.label}
+                  aria-label={option.label}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  onClick={() => selectOption(option.value, option.label)}
+                    className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition ${
+                      isActive
+                        ? 'bg-home-accent/20 text-home-accent'
+                        : 'text-white hover:bg-white/10'
+                    }`}
+                  >
+                  {optionPlatform ? (
+                    <span
+                      className={`inline-flex size-5 shrink-0 items-center justify-center ${
+                        isActive ? 'text-home-accent' : 'text-home-muted'
+                      }`}
+                      aria-hidden="true"
+                    >
+                      <SocialPlatformIcon platform={optionPlatform} />
+                    </span>
+                  ) : null}
+                  <span className="min-w-0 flex-1">{option.label}</span>
+                  {isSelected ? (
+                    <span className="text-xs text-home-accent">Selected</span>
+                  ) : null}
+                </button>
+              </li>
+            );
+          })
+        )}
+      </ul>
+    ) : null;
+
   return (
     <div ref={rootRef} className="relative space-y-2">
       <label htmlFor={id} className="block text-sm font-medium text-white">
         {label}
       </label>
       <input type="hidden" name={name} value={value} required={required} />
-      <div className="relative">
+      <div ref={triggerRef} className="relative">
+        {selectedPlatform ? (
+          <span
+            className="pointer-events-none absolute inset-y-0 left-0 z-10 inline-flex w-11 items-center justify-center text-home-muted"
+            aria-hidden="true"
+          >
+            <SocialPlatformIcon platform={selectedPlatform} />
+          </span>
+        ) : null}
         <input
           ref={inputRef}
           id={id}
@@ -146,7 +298,7 @@ export function AdminPlatformLookup({
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
-          className={`${ADMIN_FIELD_CLASS} pr-10`}
+          className={`${ADMIN_FIELD_CLASS} pr-10 ${selectedPlatform ? 'pl-11' : ''}`}
         />
         <button
           id={`${id}-toggle`}
@@ -178,44 +330,7 @@ export function AdminPlatformLookup({
         </button>
       </div>
 
-      {open ? (
-        <ul
-          id={listboxId}
-          role="listbox"
-          aria-label={label}
-          className="absolute z-20 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-white/15 bg-[#161616] py-1 shadow-xl"
-        >
-          {filteredOptions.length === 0 ? (
-            <li className="px-4 py-3 text-sm text-home-muted">No platforms found</li>
-          ) : (
-            filteredOptions.map((option, index) => {
-              const isActive = index === activeIndex;
-              const isSelected = option.value === value;
-
-              return (
-                <li key={option.value} role="option" aria-selected={isSelected}>
-                  <button
-                    id={`${id}-option-${option.value}`}
-                    type="button"
-                    title={option.label}
-                    aria-label={option.label}
-                    onMouseEnter={() => setActiveIndex(index)}
-                    onClick={() => selectOption(option.value, option.label)}
-                    className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm transition ${
-                      isActive ? 'bg-home-accent/15 text-home-accent' : 'text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <span>{option.label}</span>
-                    {isSelected ? (
-                      <span className="text-xs text-home-accent">Selected</span>
-                    ) : null}
-                  </button>
-                </li>
-              );
-            })
-          )}
-        </ul>
-      ) : null}
+      {mounted && listbox ? createPortal(listbox, document.body) : null}
     </div>
   );
 }

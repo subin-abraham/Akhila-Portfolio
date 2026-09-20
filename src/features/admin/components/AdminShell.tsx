@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
+import { AppToastProvider } from '@/components/AppToast';
 import { signOut } from '@/features/admin/lib/auth-actions';
-import { AdminToastProvider } from '@/features/admin/components/AdminToast';
 import type {
   AdminNavGroup,
   AdminNavItem,
@@ -23,7 +23,6 @@ const NAV_GROUPS: AdminNavGroup[] = [
     label: 'Layout',
     items: [
       { href: '/admin/hero', label: 'Hero', id: 'admin-nav-hero' },
-      { href: '/admin/nav-links', label: 'Navigation', id: 'admin-nav-nav-links' },
       { href: '/admin/social-links', label: 'Social', id: 'admin-nav-social' },
       { href: '/admin/footer', label: 'Footer', id: 'admin-nav-footer' },
     ],
@@ -32,15 +31,25 @@ const NAV_GROUPS: AdminNavGroup[] = [
     id: 'content',
     label: 'Content',
     items: [
-      { href: '/admin/sections', label: 'Section headers', id: 'admin-nav-sections' },
       { href: '/admin/worked-with', label: 'Worked with', id: 'admin-nav-worked-with' },
-      { href: '/admin/case-studies', label: 'Case studies', id: 'admin-nav-case-studies' },
       { href: '/admin/professional-journey', label: 'Journey', id: 'admin-nav-journey' },
       { href: '/admin/education', label: 'Education', id: 'admin-nav-education' },
-      { href: '/admin/blog', label: 'Blog', id: 'admin-nav-blog' },
       { href: '/admin/technical-expertise', label: 'Expertise', id: 'admin-nav-expertise' },
       { href: '/admin/tools-and-technology', label: 'Tools', id: 'admin-nav-tools' },
     ],
+  },
+  {
+    id: 'pages',
+    label: 'Pages',
+    items: [
+      { href: '/admin/case-studies', label: 'Case studies', id: 'admin-nav-case-studies' },
+      { href: '/admin/blog', label: 'Blog', id: 'admin-nav-blog' },
+    ],
+  },
+  {
+    id: 'inbox',
+    label: 'Inbox',
+    items: [{ href: '/admin/contact', label: 'Contact', id: 'admin-nav-contact' }],
   },
   {
     id: 'account',
@@ -49,9 +58,11 @@ const NAV_GROUPS: AdminNavGroup[] = [
   },
 ];
 
+const ICON_CLASS = 'size-5 shrink-0';
+
 function DashboardIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 shrink-0" fill="none">
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
       <path
         d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z"
         stroke="currentColor"
@@ -62,9 +73,228 @@ function DashboardIcon() {
   );
 }
 
+function HeroIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
+      <path
+        d="M12 3.5 13.6 8.4 18.5 10 13.6 11.6 12 16.5 10.4 11.6 5.5 10 10.4 8.4 12 3.5Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M18.5 15.5 19.2 17.3 21 18 19.2 18.7 18.5 20.5 17.8 18.7 16 18 17.8 17.3 18.5 15.5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function SocialIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
+      <circle cx="7" cy="12" r="2.25" stroke="currentColor" strokeWidth="1.75" />
+      <circle cx="17" cy="7" r="2.25" stroke="currentColor" strokeWidth="1.75" />
+      <circle cx="17" cy="17" r="2.25" stroke="currentColor" strokeWidth="1.75" />
+      <path
+        d="M9.1 11.1 14.9 8.1M9.1 12.9 14.9 15.9"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function FooterIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
+      <rect
+        x="3.5"
+        y="4"
+        width="17"
+        height="16"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.75"
+      />
+      <path d="M3.5 16.5h17" stroke="currentColor" strokeWidth="1.75" />
+      <path
+        d="M7 19h3.5M14 19h3"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function SectionsIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
+      <path
+        d="M5 7h14M5 12h10M5 17h12"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function WorkedWithIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
+      <path
+        d="M4 19V8.5A1.5 1.5 0 0 1 5.5 7H10l2 2.5h6.5A1.5 1.5 0 0 1 20 11v8"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+      <path d="M4 19h16" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CaseStudiesIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
+      <path
+        d="M8 7V5.5A1.5 1.5 0 0 1 9.5 4h5A1.5 1.5 0 0 1 16 5.5V7"
+        stroke="currentColor"
+        strokeWidth="1.75"
+      />
+      <rect
+        x="4"
+        y="7"
+        width="16"
+        height="13"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.75"
+      />
+      <path d="M4 12h16" stroke="currentColor" strokeWidth="1.75" />
+    </svg>
+  );
+}
+
+function JourneyIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
+      <circle cx="6" cy="7" r="2" stroke="currentColor" strokeWidth="1.75" />
+      <circle cx="18" cy="12" r="2" stroke="currentColor" strokeWidth="1.75" />
+      <circle cx="8" cy="18" r="2" stroke="currentColor" strokeWidth="1.75" />
+      <path
+        d="M7.8 8.6 16.2 11.2M16.2 13.2 9.7 16.6"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function EducationIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
+      <path
+        d="M3.5 10 12 5.5 20.5 10 12 14.5 3.5 10Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7 12.2v4.1c0 .4.9 1.6 5 1.6s5-1.2 5-1.6v-4.1"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+      <path d="M20.5 10v5.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function BlogIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
+      <path
+        d="M5 5.5h10.5A1.5 1.5 0 0 1 17 7v12.5H6.5A1.5 1.5 0 0 1 5 18V5.5Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 9h6.5M8 12.5h6.5M8 16h4"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+      <path d="M17 9.5h1.5A1.5 1.5 0 0 1 20 11v8a1.5 1.5 0 0 1-1.5 1.5H8.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ExpertiseIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
+      <path
+        d="M5 19V10.5M10.5 19V6M16 19v-8M21 19H3"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ToolsIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
+      <path
+        d="M14.5 6.5a3.5 3.5 0 0 0 3 3L20 12l-2.5 2.5-2.5-2.5a3.5 3.5 0 0 0-3-3L9.5 11.5 7 9l2.5-2.5 5 0Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4.5 19.5 10 14"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function ContactIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
+      <rect
+        x="3.5"
+        y="5.5"
+        width="17"
+        height="13"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.75"
+      />
+      <path
+        d="m5 8.5 6.2 4.2a1.4 1.4 0 0 0 1.6 0L19 8.5"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function SettingsIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 shrink-0" fill="none">
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
       <path
         d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
         stroke="currentColor"
@@ -80,27 +310,9 @@ function SettingsIcon() {
   );
 }
 
-function ContentIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 shrink-0" fill="none">
-      <path
-        d="M7 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"
-        stroke="currentColor"
-        strokeWidth="1.75"
-      />
-      <path
-        d="M8.5 8.5h7M8.5 12h7M8.5 15.5h4"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 function SignOutIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 shrink-0" fill="none">
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={ICON_CLASS} fill="none">
       <path
         d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"
         stroke="currentColor"
@@ -138,15 +350,36 @@ function CollapseIcon({ collapsed }: { collapsed: boolean }) {
 }
 
 function NavIcon({ href }: { href: string }) {
-  if (href === '/admin/settings') {
-    return <SettingsIcon />;
+  switch (href) {
+    case '/admin':
+      return <DashboardIcon />;
+    case '/admin/hero':
+      return <HeroIcon />;
+    case '/admin/social-links':
+      return <SocialIcon />;
+    case '/admin/footer':
+      return <FooterIcon />;
+    case '/admin/worked-with':
+      return <WorkedWithIcon />;
+    case '/admin/case-studies':
+      return <CaseStudiesIcon />;
+    case '/admin/professional-journey':
+      return <JourneyIcon />;
+    case '/admin/education':
+      return <EducationIcon />;
+    case '/admin/blog':
+      return <BlogIcon />;
+    case '/admin/technical-expertise':
+      return <ExpertiseIcon />;
+    case '/admin/tools-and-technology':
+      return <ToolsIcon />;
+    case '/admin/contact':
+      return <ContactIcon />;
+    case '/admin/settings':
+      return <SettingsIcon />;
+    default:
+      return <SectionsIcon />;
   }
-
-  if (href === '/admin') {
-    return <DashboardIcon />;
-  }
-
-  return <ContentIcon />;
 }
 
 function isNavItemActive(pathname: string, item: AdminNavItem) {
@@ -162,10 +395,10 @@ export function AdminShell({ children }: AdminShellProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <AdminToastProvider>
-      <div className="flex h-dvh w-full overflow-hidden bg-home-bg text-white">
+    <AppToastProvider>
+      <div className="flex min-h-0 w-full flex-1 overflow-hidden bg-home-bg text-white">
         <aside
-          className={`flex h-dvh shrink-0 flex-col border-r border-white/10 bg-[#121212] transition-[width] duration-300 ease-out ${
+          className={`flex min-h-0 shrink-0 flex-col self-stretch border-r border-white/10 bg-[#121212] transition-[width] duration-300 ease-out ${
             collapsed ? 'w-16' : 'w-60'
           }`}
         >
@@ -249,8 +482,10 @@ export function AdminShell({ children }: AdminShellProps) {
         </div>
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">{children}</div>
+      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">
+        {children}
       </div>
-    </AdminToastProvider>
+      </div>
+    </AppToastProvider>
   );
 }

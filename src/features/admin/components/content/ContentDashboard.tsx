@@ -14,7 +14,7 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
   {
     id: 'layout',
     title: 'Layout',
-    description: 'Hero, navigation, social links, and footer chrome.',
+    description: 'Hero, social links, and footer chrome.',
     cards: [
       {
         href: '/admin/hero',
@@ -22,41 +22,26 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
         description: 'Name, intro, and primary button',
       },
       {
-        href: '/admin/nav-links',
-        title: 'Navigation',
-        description: 'Header menu links',
-      },
-      {
         href: '/admin/social-links',
         title: 'Social links',
-        description: 'Profile links for LinkedIn, Behance, Twitter',
+        description: 'LinkedIn, email, and other profile links',
       },
       {
         href: '/admin/footer',
         title: 'Footer',
-        description: 'Brand copy and link columns',
+        description: 'Brand copy, CTA, and social icons',
       },
     ],
   },
   {
     id: 'content',
     title: 'Content',
-    description: 'Section headers and homepage body sections.',
+    description: 'Homepage body sections.',
     cards: [
-      {
-        href: '/admin/sections',
-        title: 'Section headers',
-        description: 'Section labels, titles, descriptions',
-      },
       {
         href: '/admin/worked-with',
         title: 'Worked with',
         description: 'Logo row companies',
-      },
-      {
-        href: '/admin/case-studies',
-        title: 'Case studies',
-        description: 'Project deep-dives on /case-studies',
       },
       {
         href: '/admin/professional-journey',
@@ -67,11 +52,6 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
         href: '/admin/education',
         title: 'Education',
         description: 'Degrees and academic entries',
-      },
-      {
-        href: '/admin/blog',
-        title: 'Blog',
-        description: 'Posts for the /blog page',
       },
       {
         href: '/admin/technical-expertise',
@@ -85,11 +65,40 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
       },
     ],
   },
+  {
+    id: 'pages',
+    title: 'Pages',
+    description: 'Standalone public pages for case studies and blog.',
+    cards: [
+      {
+        href: '/admin/case-studies',
+        title: 'Case studies',
+        description: 'Project deep-dives on /case-studies',
+      },
+      {
+        href: '/admin/blog',
+        title: 'Blog',
+        description: 'Posts for the /blog page',
+      },
+    ],
+  },
+  {
+    id: 'inbox',
+    title: 'Inbox',
+    description: 'Contact form submissions, delivery status, and rate-limit logs.',
+    cards: [
+      {
+        href: '/admin/contact',
+        title: 'Contact',
+        description: 'Submissions, email delivery details, and rate limits',
+      },
+    ],
+  },
 ];
 
 export function ContentDashboard() {
   return (
-    <main className="flex-1 px-6 py-8 sm:px-10">
+    <main className="px-6 py-8 sm:px-10">
       <AdminPageHeader
         eyebrow="Admin"
         title="Homepage content"

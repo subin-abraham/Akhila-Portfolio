@@ -1,135 +1,166 @@
 'use client';
 
+import { useState } from 'react';
+
+import { AdminDataTable } from '@/features/admin/components/AdminDataTable';
 import {
   AdminActionForm,
   AdminField,
-  AdminFormCard,
+  AdminHeaderAddButton,
   AdminPageHeader,
   AdminStatus,
   AdminSubmitButton,
   AdminTextareaField,
 } from '@/features/admin/components/AdminFormPrimitives';
-import { DeleteItemForm } from '@/features/admin/components/DeleteItemForm';
-import { EmptyState } from '@/components/EmptyState';
+import { AdminDateField } from '@/features/admin/components/AdminDateField';
+import { AdminModal } from '@/features/admin/components/AdminModal';
 import {
   createBlogPost,
   deleteBlogPost,
   updateBlogPost,
 } from '@/features/admin/lib/content-actions';
-import type { BlogEditorProps } from '@/types/components/admin-content';
+import type { AdminBlogPostItem, BlogEditorProps } from '@/types/components/admin-content';
+import type { AdminTableColumn } from '@/types/components/admin-table';
+
+const COLUMNS: AdminTableColumn<AdminBlogPostItem>[] = [
+  { id: 'title', header: 'Title', cell: (row) => row.title },
+  { id: 'slug', header: 'Slug', cell: (row) => row.slug, hideBelow: 'sm' },
+  {
+    id: 'publishedOn',
+    header: 'Published',
+    cell: (row) => row.publishedOn,
+    hideBelow: 'md',
+  },
+];
 
 export function BlogEditor({ items }: BlogEditorProps) {
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
   return (
-    <main className="flex-1 px-6 py-8 sm:px-10">
+    <main className="px-6 py-8 sm:px-10">
       <AdminPageHeader
-        eyebrow="Content"
+        eyebrow="Pages"
         title="Blog"
         description="Create and edit posts for the /blog page. Full body text opens in a reading modal."
+        action={
+          <AdminHeaderAddButton
+            id="admin-blog-add"
+            label="Add"
+            onClick={() => setIsCreateOpen(true)}
+          />
+        }
       />
 
-      <div className="grid w-full gap-6">
-        {items.length === 0 ? (
-          <EmptyState
-            title="No blog posts yet"
-            description="Add your first post below. It will appear on the public blog page."
-          />
-        ) : null}
-
-        {items.map((item) => {
-          const formId = `admin-blog-${item.id}`;
-
-          return (
-            <AdminFormCard key={item.id} title={item.title}>
-              <div className="space-y-4">
-                <AdminActionForm formId={formId} action={updateBlogPost} className="space-y-4">
-                  {({ state, isPending, statusId, hasError }) => (
-                    <>
-                      <input type="hidden" name="id" value={item.id} />
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <AdminField
-                          id={`${formId}-title`}
-                          name="title"
-                          label="Title"
-                          defaultValue={item.title}
-                          required
-                          describedBy={statusId}
-                          invalid={hasError}
-                        />
-                        <AdminField
-                          id={`${formId}-slug`}
-                          name="slug"
-                          label="Slug"
-                          defaultValue={item.slug}
-                          required
-                          describedBy={statusId}
-                          invalid={hasError}
-                        />
-                        <AdminField
-                          id={`${formId}-published`}
-                          name="publishedOn"
-                          label="Published on"
-                          type="date"
-                          defaultValue={item.publishedOn}
-                          required
-                          describedBy={statusId}
-                          invalid={hasError}
-                        />
-                        <AdminField
-                          id={`${formId}-sort`}
-                          name="sortOrder"
-                          label="Display order"
-                          type="number"
-                          defaultValue={item.sortOrder}
-                          required
-                          describedBy={statusId}
-                          invalid={hasError}
-                        />
-                      </div>
-                      <AdminTextareaField
-                        id={`${formId}-excerpt`}
-                        name="excerpt"
-                        label="Excerpt"
-                        defaultValue={item.excerpt}
-                        required
-                        rows={3}
-                        describedBy={statusId}
-                        invalid={hasError}
-                      />
-                      <AdminTextareaField
-                        id={`${formId}-body`}
-                        name="body"
-                        label="Body"
-                        defaultValue={item.body}
-                        required
-                        rows={10}
-                        describedBy={statusId}
-                        invalid={hasError}
-                      />
-                      <AdminStatus id={statusId} state={state} />
-                      <AdminSubmitButton
-                        id={`${formId}-submit`}
-                        label="Save"
-                        pendingLabel="Saving…"
-                        isPending={isPending}
-                      />
-                    </>
-                  )}
-                </AdminActionForm>
-                <DeleteItemForm
-                  formId={`${formId}-delete`}
-                  itemId={item.id}
-                  action={deleteBlogPost}
-                  confirmMessage={`Delete "${item.title}"?`}
+      <AdminDataTable
+        caption="Blog posts"
+        rows={items}
+        columns={COLUMNS}
+        getRowLabel={(row) => row.title}
+        getDetailFields={(row) => [
+          { label: 'Title', value: row.title },
+          { label: 'Slug', value: row.slug },
+          { label: 'Published on', value: row.publishedOn },
+          { label: 'Excerpt', value: row.excerpt },
+          { label: 'Body', value: row.body },
+          { label: 'Display order', value: String(row.sortOrder) },
+        ]}
+        deleteAction={deleteBlogPost}
+        getDeleteConfirmMessage={(row) => `Delete "${row.title}"?`}
+        emptyTitle="No blog posts yet"
+        emptyDescription="Use Add to create a post for the public blog page."
+        renderEditForm={({ row, formId, onSuccess }) => (
+          <AdminActionForm
+            formId={formId}
+            action={updateBlogPost}
+            onSuccess={onSuccess}
+            className="space-y-4"
+          >
+            {({ state, isPending, statusId, hasError }) => (
+              <>
+                <input type="hidden" name="id" value={row.id} />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <AdminField
+                    id={`${formId}-title`}
+                    name="title"
+                    label="Title"
+                    defaultValue={row.title}
+                    required
+                    describedBy={statusId}
+                    invalid={hasError}
+                  />
+                  <AdminField
+                    id={`${formId}-slug`}
+                    name="slug"
+                    label="Slug"
+                    defaultValue={row.slug}
+                    required
+                    describedBy={statusId}
+                    invalid={hasError}
+                  />
+                  <AdminDateField
+                    id={`${formId}-published`}
+                    name="publishedOn"
+                    label="Published on"
+                    defaultValue={row.publishedOn}
+                    required
+                    describedBy={statusId}
+                    invalid={hasError}
+                  />
+                  <AdminField
+                    id={`${formId}-sort`}
+                    name="sortOrder"
+                    label="Display order"
+                    type="number"
+                    defaultValue={row.sortOrder}
+                    required
+                    describedBy={statusId}
+                    invalid={hasError}
+                  />
+                </div>
+                <AdminTextareaField
+                  id={`${formId}-excerpt`}
+                  name="excerpt"
+                  label="Excerpt"
+                  defaultValue={row.excerpt}
+                  required
+                  rows={3}
+                  describedBy={statusId}
+                  invalid={hasError}
                 />
-              </div>
-            </AdminFormCard>
-          );
-        })}
+                <AdminTextareaField
+                  id={`${formId}-body`}
+                  name="body"
+                  label="Body"
+                  defaultValue={row.body}
+                  required
+                  rows={10}
+                  describedBy={statusId}
+                  invalid={hasError}
+                />
+                <AdminStatus id={statusId} state={state} />
+                <AdminSubmitButton
+                  id={`${formId}-submit`}
+                  label="Save"
+                  pendingLabel="Saving…"
+                  isPending={isPending}
+                />
+              </>
+            )}
+          </AdminActionForm>
+        )}
+      />
 
-        <AdminFormCard title="Add blog post">
+      {isCreateOpen ? (
+        <AdminModal
+          title="Add blog post"
+          description="Create a post for the public blog page."
+          onClose={() => setIsCreateOpen(false)}
+          size="xl"
+        >
           <AdminActionForm
             formId="admin-blog-create"
             action={createBlogPost}
+            onSuccess={() => setIsCreateOpen(false)}
             className="space-y-4"
           >
             {({ state, isPending, statusId, hasError }) => (
@@ -151,11 +182,10 @@ export function BlogEditor({ items }: BlogEditorProps) {
                     describedBy={statusId}
                     invalid={hasError}
                   />
-                  <AdminField
+                  <AdminDateField
                     id="admin-blog-create-published"
                     name="publishedOn"
                     label="Published on"
-                    type="date"
                     required
                     describedBy={statusId}
                     invalid={hasError}
@@ -198,8 +228,8 @@ export function BlogEditor({ items }: BlogEditorProps) {
               </>
             )}
           </AdminActionForm>
-        </AdminFormCard>
-      </div>
+        </AdminModal>
+      ) : null}
     </main>
   );
 }

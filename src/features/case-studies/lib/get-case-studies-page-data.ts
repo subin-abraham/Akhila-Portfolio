@@ -1,3 +1,7 @@
+import {
+  filterLinksBySiteSettings,
+  getSiteSettings,
+} from '@/features/home/lib/site-settings';
 import { createClient } from '@/lib/supabase/server';
 import type { CaseStudiesPageData } from '@/types/components/case-studies-page';
 import type {
@@ -132,6 +136,7 @@ export async function getCaseStudiesPageData(): Promise<CaseStudiesPageData> {
     socialResult,
     footerResult,
     footerLinksResult,
+    siteSettings,
   ] = await Promise.all([
     supabase
       .from('case_studies')
@@ -152,6 +157,7 @@ export async function getCaseStudiesPageData(): Promise<CaseStudiesPageData> {
       .select('*')
       .order('column_sort_order', { ascending: true })
       .order('sort_order', { ascending: true }),
+    getSiteSettings(),
   ]);
 
   if (itemsResult.error) {
@@ -195,11 +201,14 @@ export async function getCaseStudiesPageData(): Promise<CaseStudiesPageData> {
   return {
     section: mapHomepageSection(sectionRow),
     items: (itemsResult.data as CaseStudyRow[]).map(mapCaseStudy),
-    navLinks: (navResult.data as NavLinkRow[]).map(mapNavLink),
+    navLinks: filterLinksBySiteSettings(
+      (navResult.data as NavLinkRow[]).map(mapNavLink),
+      siteSettings,
+    ),
     socialLinks: (socialResult.data as SocialLinkRow[]).map(mapSocialLink),
     footer: mapFooterData(
       footerResult.data as FooterRow,
-      footerLinksResult.data as FooterLinkRow[]
+      filterLinksBySiteSettings(footerLinksResult.data as FooterLinkRow[], siteSettings),
     ),
   };
 }

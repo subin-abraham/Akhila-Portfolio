@@ -1,10 +1,8 @@
 'use client';
 
 import type { FormEvent, ReactNode } from 'react';
-import { useEffect, useRef } from 'react';
-import { useActionState } from 'react';
 
-import { useAdminToast } from '@/features/admin/components/AdminToast';
+import { useAdminAction } from '@/features/admin/lib/use-admin-action';
 import type {
   AdminActionState,
   AdminFieldProps,
@@ -19,15 +17,41 @@ import type {
 export const ADMIN_FIELD_CLASS =
   'w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-home-muted focus:border-home-accent focus:ring-1 focus:ring-home-accent';
 
-const INITIAL_STATE: AdminActionState = { error: null, success: null };
-
-export function AdminPageHeader({ eyebrow, title, description }: AdminPageHeaderProps) {
+export function AdminPageHeader({ eyebrow, title, description, action }: AdminPageHeaderProps) {
   return (
     <header className="mb-8 w-full">
-      <p className="text-sm font-medium tracking-wide text-home-accent uppercase">{eyebrow}</p>
-      <h1 className="font-display mt-2 text-3xl font-semibold text-white">{title}</h1>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm font-medium tracking-wide text-home-accent uppercase">{eyebrow}</p>
+          <h1 className="font-display mt-2 text-3xl font-semibold text-white">{title}</h1>
+        </div>
+        {action ? <div className="shrink-0 pt-1 sm:pt-7">{action}</div> : null}
+      </div>
       {description ? <p className="mt-3 text-sm text-home-muted">{description}</p> : null}
     </header>
+  );
+}
+
+export function AdminHeaderAddButton({
+  id,
+  label,
+  onClick,
+}: {
+  id: string;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      id={id}
+      type="button"
+      title={label}
+      aria-label={label}
+      onClick={onClick}
+      className="home-cta cursor-pointer rounded-lg bg-home-accent px-5 py-2.5 text-sm font-semibold text-home-ink transition"
+    >
+      {label}
+    </button>
   );
 }
 
@@ -158,19 +182,21 @@ export function AdminSubmitButton({
 }: AdminSubmitButtonProps) {
   const className =
     variant === 'danger'
-      ? 'rounded-lg border border-red-400/40 px-4 py-2.5 text-sm font-medium text-red-300 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-60'
-      : 'home-cta rounded-lg bg-home-accent px-5 py-3 text-sm font-semibold text-home-ink transition disabled:cursor-not-allowed disabled:opacity-60';
+      ? 'inline-flex cursor-pointer items-center justify-center rounded-lg border border-red-400/40 px-4 py-2.5 text-sm font-medium text-red-300 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-60'
+      : 'home-cta inline-flex cursor-pointer items-center justify-center rounded-lg bg-home-accent px-5 py-3 text-sm font-semibold text-home-ink transition disabled:cursor-not-allowed disabled:opacity-60';
+  const activeLabel = isPending ? pendingLabel : label;
 
   return (
     <button
       id={id}
       type="submit"
-      title={label}
-      aria-label={label}
+      title={activeLabel}
+      aria-label={activeLabel}
+      aria-busy={isPending}
       disabled={isPending}
       className={className}
     >
-      {isPending ? pendingLabel : label}
+      {activeLabel}
     </button>
   );
 }
@@ -186,6 +212,7 @@ interface AdminActionFormProps {
   }) => ReactNode;
   className?: string;
   onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
+  onSuccess?: () => void;
 }
 
 export function AdminActionForm({
@@ -194,44 +221,24 @@ export function AdminActionForm({
   children,
   className,
   onSubmit,
+  onSuccess,
 }: AdminActionFormProps) {
-  const toast = useAdminToast();
-  const [state, formAction, isPending] = useActionState(action, INITIAL_STATE);
-  const lastToastKey = useRef<string | null>(null);
+  const { state, formAction, isPending } = useAdminAction({
+    action,
+    onSuccess,
+    successFallbackMessage: 'Saved.',
+  });
   const statusId = `${formId}-status`;
   const hasError = Boolean(state.error);
 
-  useEffect(() => {
-    if (isPending) {
-      lastToastKey.current = null;
-    }
-  }, [isPending]);
-
-  useEffect(() => {
-    const message = state.error ?? state.success;
-    if (!message) {
-      return;
-    }
-
-    const toastKey = `${state.error ? 'error' : 'success'}:${message}`;
-    if (lastToastKey.current === toastKey) {
-      return;
-    }
-
-    lastToastKey.current = toastKey;
-
-    if (state.error) {
-      toast.error(state.error);
-      return;
-    }
-
-    if (state.success) {
-      toast.success(state.success);
-    }
-  }, [state.error, state.success, toast]);
-
   return (
-    <form action={formAction} className={className} noValidate onSubmit={onSubmit}>
+    <form
+      action={formAction}
+      className={className}
+      noValidate
+      onSubmit={onSubmit}
+      aria-busy={isPending}
+    >
       {children({ state, isPending, statusId, hasError })}
     </form>
   );

@@ -4,7 +4,7 @@ export interface WorkedWithSectionProps {
   items: WorkedWithItem[];
 }
 
-export interface LogoRowProps {
+export interface CompanyRowProps {
   items: WorkedWithItem[];
   keyPrefix: string;
   inert?: boolean;

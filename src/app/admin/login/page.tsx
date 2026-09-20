@@ -1,8 +1,11 @@
 import { LoginForm } from '@/features/admin/components/LoginForm';
 import { redirectIfAuthenticated } from '@/features/admin/lib/require-user';
+import { createMathChallenge } from '@/features/home/lib/contact-math-challenge';
 
 export default async function AdminLoginPage() {
   await redirectIfAuthenticated();
+
+  const challenge = createMathChallenge();
 
   return (
     <main className="relative flex min-h-full flex-1 flex-col items-center justify-center overflow-hidden px-6 py-16">
@@ -16,7 +19,7 @@ export default async function AdminLoginPage() {
         <p className="mt-3 mb-8 text-center text-sm text-home-muted">
           Use your Supabase account credentials to continue.
         </p>
-        <LoginForm />
+        <LoginForm challenge={challenge} />
       </div>
     </main>
   );

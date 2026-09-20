@@ -1,7 +1,14 @@
 import { FooterEditor } from '@/features/admin/components/content/FooterEditor';
-import { getAdminFooter } from '@/features/admin/lib/get-admin-content';
+import {
+  getAdminFooter,
+  getAdminSocialLinks,
+} from '@/features/admin/lib/get-admin-content';
 
 export default async function AdminFooterPage() {
-  const { content, links } = await getAdminFooter();
-  return <FooterEditor content={content} links={links} />;
+  const [content, socialLinks] = await Promise.all([
+    getAdminFooter(),
+    getAdminSocialLinks(),
+  ]);
+
+  return <FooterEditor content={content} socialLinks={socialLinks} />;
 }

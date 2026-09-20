@@ -129,10 +129,6 @@ export function SiteFooter({ footer, socialLinks }: SiteFooterProps) {
             <div className="mt-5">
               <SocialIcons links={socialLinks} />
             </div>
-            <p className="site-footer-status mt-8">
-              <span className="site-footer-status-dot" aria-hidden="true" />
-              <span>{content.statusLabel}</span>
-            </p>
           </div>
 
           <div className="site-footer-columns">

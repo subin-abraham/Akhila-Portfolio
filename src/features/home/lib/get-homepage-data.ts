@@ -1,3 +1,7 @@
+import {
+  filterLinksBySiteSettings,
+  getSiteSettings,
+} from '@/features/home/lib/site-settings';
 import { createClient } from '@/lib/supabase/server';
 import type {
   EducationItem,
@@ -112,7 +116,6 @@ function mapWorkedWith(row: WorkedWithRow): WorkedWithItem {
   return {
     id: row.id,
     name: row.name,
-    logoUrl: row.logo_url,
     sortOrder: row.sort_order,
   };
 }
@@ -268,6 +271,7 @@ export async function getHomepageData(): Promise<HomepageData> {
     sectionsResult,
     footerResult,
     footerLinksResult,
+    siteSettings,
   ] = await Promise.all([
     supabase.from('homepage').select('*').limit(1).single(),
     supabase.from('nav_links').select('*').order('sort_order', { ascending: true }),
@@ -302,6 +306,7 @@ export async function getHomepageData(): Promise<HomepageData> {
       .select('*')
       .order('column_sort_order', { ascending: true })
       .order('sort_order', { ascending: true }),
+    getSiteSettings(),
   ]);
 
   if (homepageResult.error) {
@@ -366,9 +371,18 @@ export async function getHomepageData(): Promise<HomepageData> {
     mapHomepageSection
   );
 
+  const navLinks = filterLinksBySiteSettings(
+    (navResult.data as NavLinkRow[]).map(mapNavLink),
+    siteSettings,
+  );
+  const footerLinkRows = filterLinksBySiteSettings(
+    footerLinksResult.data as FooterLinkRow[],
+    siteSettings,
+  );
+
   return {
     homepage: mapHomepage(homepageResult.data as HomepageRow),
-    navLinks: (navResult.data as NavLinkRow[]).map(mapNavLink),
+    navLinks,
     socialLinks: (socialResult.data as SocialLinkRow[]).map(mapSocialLink),
     workedWith: (workedWithResult.data as WorkedWithRow[]).map(mapWorkedWith),
     professionalJourney: (journeyResult.data as ProfessionalJourneyRow[]).map(
@@ -399,9 +413,6 @@ export async function getHomepageData(): Promise<HomepageData> {
       CONTACT_SECTION_KEY,
       DEFAULT_CONTACT_SECTION
     ),
-    footer: mapFooterData(
-      footerResult.data as FooterRow,
-      footerLinksResult.data as FooterLinkRow[]
-    ),
+    footer: mapFooterData(footerResult.data as FooterRow, footerLinkRows),
   };
 }

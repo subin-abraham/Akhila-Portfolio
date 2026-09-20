@@ -2,6 +2,9 @@
 
 import { useActionState, useId, useState } from 'react';
 
+import { useTrackPending } from '@/components/AppLoader';
+import { MathChallengeField } from '@/components/MathChallengeField';
+import { ToastBanner } from '@/components/AppToast';
 import { SectionHeading } from '@/features/home/components/SectionHeading';
 import { submitContactMessage } from '@/features/home/lib/contact-actions';
 import type {
@@ -80,6 +83,7 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
     submitContactMessage,
     INITIAL_STATE
   );
+  useTrackPending(isPending, 'Sending message…');
   const activeChallenge: MathChallengePublic = state.challenge ?? challenge;
   const defaults: ContactFormValues = state.values ?? EMPTY_VALUES;
   const formKey = activeChallenge.token;
@@ -87,9 +91,6 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
   const fieldDescribedBy = hasError ? statusId : undefined;
   const toastMessage = state.error ?? state.success;
   const isErrorToast = Boolean(state.error);
-  const toastSurfaceClassName = isErrorToast
-    ? 'border-red-400/70 bg-red-500 text-white shadow-[0_12px_40px_rgb(239_68_68/0.45)]'
-    : 'border-home-accent bg-home-accent text-home-ink shadow-[0_12px_40px_rgb(182_243_75/0.45)]';
 
   return (
     <section
@@ -103,27 +104,11 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
           aria-relevant="additions text"
           className="pointer-events-none fixed inset-x-0 top-24 z-[90] flex justify-center px-4 sm:top-28"
         >
-          <div
+          <ToastBanner
             key={`${isErrorToast ? 'error' : 'success'}-${formKey}-${toastMessage}`}
-            role={isErrorToast ? 'alert' : 'status'}
-            className={`contact-toast pointer-events-auto flex w-full max-w-lg items-center gap-3 rounded-2xl border-2 px-5 py-4 ${toastSurfaceClassName}`}
-          >
-            <span
-              aria-hidden="true"
-              className={`inline-flex size-9 shrink-0 items-center justify-center rounded-full text-lg font-bold ${
-                isErrorToast ? 'bg-white/20 text-white' : 'bg-home-ink/15 text-home-ink'
-              }`}
-            >
-              {isErrorToast ? '!' : '✓'}
-            </span>
-            <p
-              className={`flex-1 text-sm font-semibold sm:text-base ${
-                isErrorToast ? 'text-white' : 'text-home-ink'
-              }`}
-            >
-              {toastMessage}
-            </p>
-          </div>
+            message={toastMessage}
+            variant={isErrorToast ? 'error' : 'success'}
+          />
         </div>
       ) : null}
 
@@ -134,6 +119,7 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
         action={formAction}
         className="relative grid gap-5 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:grid-cols-2 sm:gap-6 sm:p-8"
         noValidate
+        aria-busy={isPending}
       >
         <div className="pointer-events-none absolute left-0 top-0 h-0 w-0 overflow-hidden opacity-0">
           <label htmlFor="contact-company">Company</label>
@@ -145,8 +131,6 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
             autoComplete="off"
           />
         </div>
-
-        <input type="hidden" name="challengeToken" value={activeChallenge.token} />
 
         <div className="flex flex-col gap-2">
           <label htmlFor="contact-name" className="text-sm font-medium text-white">
@@ -211,27 +195,14 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
           describedBy={fieldDescribedBy}
         />
 
-        <div className="flex flex-col gap-2 sm:col-span-2 sm:max-w-xs">
-          <label
-            htmlFor="contact-challenge-answer"
-            className="text-sm font-medium text-white"
-          >
-            {activeChallenge.question}
-          </label>
-          <input
-            id="contact-challenge-answer"
-            name="challengeAnswer"
-            type="text"
-            inputMode="numeric"
-            required
-            autoComplete="off"
-            defaultValue=""
-            aria-invalid={hasError}
-            aria-describedby={fieldDescribedBy}
-            className="rounded-lg border border-white/15 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-home-muted focus:border-home-accent/50"
-            placeholder="Your answer"
-          />
-        </div>
+        <MathChallengeField
+          key={activeChallenge.token}
+          idPrefix="contact"
+          challenge={activeChallenge}
+          hasError={hasError}
+          describedBy={fieldDescribedBy}
+          className="flex flex-col gap-2 sm:col-span-2 sm:max-w-xs"
+        />
 
         <div className="flex flex-col gap-4 sm:col-span-2 sm:flex-row sm:items-center sm:justify-end">
           <p id={statusId} className="sr-only">
@@ -243,8 +214,9 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
             type="submit"
             title={isPending ? 'Sending message' : 'Send message'}
             aria-label={isPending ? 'Sending message' : 'Send message'}
+            aria-busy={isPending}
             disabled={isPending}
-            className="home-cta inline-flex cursor-pointer items-center justify-center rounded-lg bg-home-accent px-5 py-3 text-sm font-semibold text-home-ink transition disabled:cursor-not-allowed disabled:opacity-60"
+            className="home-cta cursor-pointer rounded-lg bg-home-accent px-5 py-3 text-sm font-semibold text-home-ink transition disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isPending ? 'Sending…' : 'Send message'}
           </button>

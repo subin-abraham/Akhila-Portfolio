@@ -28,12 +28,18 @@ export interface AdminAuthFormProps {
 
 export interface SettingsPageProps {
   currentUserEmail: string;
+  siteSettings: {
+    id: string;
+    blogEnabled: boolean;
+    caseStudiesEnabled: boolean;
+  };
 }
 
 export interface AdminPageHeaderProps {
   eyebrow: string;
   title: string;
   description?: string;
+  action?: ReactNode;
 }
 
 export interface AdminFormCardProps {
@@ -52,6 +58,16 @@ export interface AdminFieldProps {
   min?: number;
   max?: number;
   placeholder?: string;
+  describedBy?: string;
+  invalid?: boolean;
+}
+
+export interface AdminDateFieldProps {
+  id: string;
+  name: string;
+  label: string;
+  defaultValue?: string;
+  required?: boolean;
   describedBy?: string;
   invalid?: boolean;
 }

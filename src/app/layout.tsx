@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Outfit, Syne } from 'next/font/google';
 
+import { AppProviders } from '@/components/AppProviders';
+
 import './globals.css';
 
 const outfit = Outfit({
@@ -25,7 +27,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       lang="en"
       className={`${outfit.variable} ${syne.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   );
 }

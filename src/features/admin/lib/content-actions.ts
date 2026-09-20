@@ -9,6 +9,7 @@ import {
   readString,
   requireNonEmpty,
 } from '@/features/admin/lib/form-helpers';
+import { parseError } from '@/features/admin/lib/parse-error';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import type { AdminActionState } from '@/types/components/admin-shell';
@@ -16,7 +17,6 @@ import { isSocialPlatform } from '@/features/home/lib/social-platforms';
 import type { SocialPlatform } from '@/features/home/lib/social-platforms';
 
 const EMPTY: AdminActionState = { error: null, success: null };
-const HIGHLIGHT_TARGETS = new Set(['title', 'accent']);
 
 async function assertAuthenticated() {
   const supabase = await createClient();
@@ -37,7 +37,7 @@ function revalidateContent(adminPath: string) {
 }
 
 function fail(message: string): AdminActionState {
-  return { ...EMPTY, error: message };
+  return { ...EMPTY, error: parseError(message) };
 }
 
 function ok(message: string): AdminActionState {
@@ -86,56 +86,6 @@ export async function updateHomepage(
 
   revalidateContent('/admin/hero');
   return ok('Hero content saved.');
-}
-
-export async function updateHomepageSection(
-  _prev: AdminActionState,
-  formData: FormData,
-): Promise<AdminActionState> {
-  await assertAuthenticated();
-
-  const id = readString(formData, 'id');
-  const eyebrow = readString(formData, 'eyebrow');
-  const title = readString(formData, 'title');
-  const accentTitle = readOptionalString(formData, 'accentTitle');
-  const description = readString(formData, 'description');
-  const highlightTarget = readString(formData, 'highlightTarget');
-
-  const missing = requireNonEmpty({
-    Id: id,
-    'Section label': eyebrow,
-    Title: title,
-    Description: description,
-    'Highlight on': highlightTarget,
-  });
-
-  if (missing) {
-    return fail(missing);
-  }
-
-  if (!HIGHLIGHT_TARGETS.has(highlightTarget)) {
-    return fail('Highlight on must be title or accent.');
-  }
-
-  const admin = createAdminClient();
-  const { error } = await admin
-    .from('homepage_sections')
-    .update({
-      eyebrow,
-      title,
-      accent_title: accentTitle,
-      description,
-      highlight_target: highlightTarget,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', id);
-
-  if (error) {
-    return fail(error.message);
-  }
-
-  revalidateContent('/admin/sections');
-  return ok('Section copy saved.');
 }
 
 export async function updateFooter(
@@ -304,6 +254,7 @@ export async function createSocialLink(
   }
 
   revalidateContent('/admin/social-links');
+  revalidatePath('/admin/footer');
   return ok('Social link added.');
 }
 
@@ -345,6 +296,7 @@ export async function updateSocialLink(
   }
 
   revalidateContent('/admin/social-links');
+  revalidatePath('/admin/footer');
   return ok('Social link updated.');
 }
 
@@ -367,6 +319,7 @@ export async function deleteSocialLink(
   }
 
   revalidateContent('/admin/social-links');
+  revalidatePath('/admin/footer');
   return ok('Social link deleted.');
 }
 
@@ -377,10 +330,9 @@ export async function createWorkedWith(
   await assertAuthenticated();
 
   const name = readString(formData, 'name');
-  const logoUrl = readString(formData, 'logoUrl');
   const sortOrder = readInteger(formData, 'sortOrder') ?? 0;
 
-  const missing = requireNonEmpty({ Name: name, 'Logo image path': logoUrl });
+  const missing = requireNonEmpty({ Name: name });
   if (missing) {
     return fail(missing);
   }
@@ -388,7 +340,6 @@ export async function createWorkedWith(
   const admin = createAdminClient();
   const { error } = await admin.from('worked_with').insert({
     name,
-    logo_url: logoUrl,
     sort_order: sortOrder,
   });
 
@@ -397,7 +348,7 @@ export async function createWorkedWith(
   }
 
   revalidateContent('/admin/worked-with');
-  return ok('Logo added.');
+  return ok('Company added.');
 }
 
 export async function updateWorkedWith(
@@ -408,10 +359,9 @@ export async function updateWorkedWith(
 
   const id = readString(formData, 'id');
   const name = readString(formData, 'name');
-  const logoUrl = readString(formData, 'logoUrl');
   const sortOrder = readInteger(formData, 'sortOrder');
 
-  const missing = requireNonEmpty({ Id: id, Name: name, 'Logo image path': logoUrl });
+  const missing = requireNonEmpty({ Id: id, Name: name });
   if (missing) {
     return fail(missing);
   }
@@ -423,7 +373,7 @@ export async function updateWorkedWith(
   const admin = createAdminClient();
   const { error } = await admin
     .from('worked_with')
-    .update({ name, logo_url: logoUrl, sort_order: sortOrder })
+    .update({ name, sort_order: sortOrder })
     .eq('id', id);
 
   if (error) {
@@ -431,7 +381,7 @@ export async function updateWorkedWith(
   }
 
   revalidateContent('/admin/worked-with');
-  return ok('Logo updated.');
+  return ok('Company updated.');
 }
 
 export async function deleteWorkedWith(
@@ -453,7 +403,7 @@ export async function deleteWorkedWith(
   }
 
   revalidateContent('/admin/worked-with');
-  return ok('Logo deleted.');
+  return ok('Company deleted.');
 }
 
 export async function createProfessionalJourney(
@@ -1235,4 +1185,48 @@ export async function deleteFooterLink(
 
   revalidateContent('/admin/footer');
   return ok('Footer link deleted.');
+}
+
+export async function deleteContactSubmission(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  await assertAuthenticated();
+
+  const id = readString(formData, 'id');
+  if (!id) {
+    return fail('Id is required.');
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.from('contact_submissions').delete().eq('id', id);
+
+  if (error) {
+    return fail(error.message);
+  }
+
+  revalidatePath('/admin/contact');
+  return ok('Contact submission deleted.');
+}
+
+export async function deleteContactRateLimitEvent(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  await assertAuthenticated();
+
+  const id = readString(formData, 'id');
+  if (!id) {
+    return fail('Id is required.');
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.from('contact_rate_limit_events').delete().eq('id', id);
+
+  if (error) {
+    return fail(error.message);
+  }
+
+  revalidatePath('/admin/contact');
+  return ok('Rate limit event deleted.');
 }

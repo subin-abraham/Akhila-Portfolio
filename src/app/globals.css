@@ -41,7 +41,7 @@ html {
   }
 }
 
-@keyframes contact-toast-fade {
+@keyframes app-toast-fade {
   0% {
     opacity: 0;
     transform: translateY(-0.75rem);
@@ -59,12 +59,12 @@ html {
   }
 }
 
-.contact-toast {
-  animation: contact-toast-fade 4.5s ease forwards;
+.app-toast {
+  animation: app-toast-fade 4.5s ease forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .contact-toast {
+  .app-toast {
     animation: none;
   }
 }
@@ -75,6 +75,19 @@ html {
 
 .home-cta {
   box-shadow: 0 0 0 1px rgb(182 243 75 / 0.25), 0 0 28px rgb(182 243 75 / 0.35);
+}
+
+button:enabled,
+[role='button']:not([aria-disabled='true']),
+[role='switch']:enabled,
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+[role='button'][aria-disabled='true'],
+[role='switch']:disabled {
+  cursor: not-allowed;
 }
 
 .site-header-shell {
@@ -589,34 +602,6 @@ html {
   flex-shrink: 0;
 }
 
-.site-footer-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  margin: 0;
-  color: rgb(255 255 255 / 0.62);
-  font-size: 0.8125rem;
-}
-
-.site-footer-status-dot {
-  position: relative;
-  display: inline-block;
-  width: 0.55rem;
-  height: 0.55rem;
-  border-radius: 999px;
-  background: var(--home-accent);
-  box-shadow: 0 0 0 3px rgb(182 243 75 / 0.12);
-}
-
-.site-footer-status-dot::after {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: inherit;
-  border: 1px solid rgb(182 243 75 / 0.35);
-  animation: site-footer-status-pulse 2.8s ease-in-out infinite;
-}
-
 .site-footer-columns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -689,19 +674,6 @@ html {
   height: 100%;
 }
 
-@keyframes site-footer-status-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.55;
-  }
-
-  50% {
-    transform: scale(1.35);
-    opacity: 0.15;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .home-cta {
     transition: none;
@@ -738,8 +710,171 @@ html {
   .tools-chip {
     transition: none;
   }
+}
 
-  .site-footer-status-dot::after {
+.app-loader {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  color: currentColor;
+  line-height: 0;
+}
+
+.app-loader-sm {
+  gap: 0;
+}
+
+.app-loader-label {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  color: var(--home-muted);
+}
+
+.app-loader-global {
+  gap: 0.85rem;
+}
+
+.app-loader-global .app-loader-svg {
+  width: 3.75rem;
+  height: auto;
+}
+
+.app-loader-global .app-loader-label {
+  font-size: 0.875rem;
+}
+
+@media (min-width: 1024px) {
+  .app-loader-global {
+    gap: 1rem;
+  }
+
+  .app-loader-global .app-loader-svg {
+    width: 5rem;
+  }
+
+  .app-loader-global .app-loader-label {
+    font-size: 0.9375rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .app-loader-global .app-loader-svg {
+    width: 5.5rem;
+  }
+
+  .app-loader-global .app-loader-label {
+    font-size: 1rem;
+  }
+}
+
+.app-loader-svg {
+  display: block;
+  overflow: visible;
+}
+
+.app-loader-cube {
+  opacity: 0.28;
+  animation: app-loader-pulse 1.5s ease-in-out infinite;
+}
+
+.app-loader-cube-a {
+  animation-delay: 0s;
+}
+
+.app-loader-cube-b {
+  animation-delay: 0.2s;
+}
+
+.app-loader-cube-c {
+  animation-delay: 0.4s;
+}
+
+@keyframes app-loader-pulse {
+  0%,
+  100% {
+    opacity: 0.22;
+  }
+
+  45%,
+  55% {
+    opacity: 1;
+  }
+}
+
+.app-loader-assemble {
+  animation: app-loader-tilt 2.4s ease-in-out infinite;
+  transform-origin: 50% 55%;
+}
+
+@keyframes app-loader-tilt {
+  0%,
+  100% {
+    transform: rotate(-4deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(4deg) translateY(-1px);
+  }
+}
+
+.app-loader-edge {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: app-loader-draw 1.8s ease-in-out infinite;
+}
+
+.app-loader-edge-1 {
+  animation-delay: 0s;
+}
+
+.app-loader-edge-2 {
+  animation-delay: 0.12s;
+}
+
+.app-loader-edge-3 {
+  animation-delay: 0.24s;
+}
+
+.app-loader-edge-4 {
+  animation-delay: 0.36s;
+  stroke-dasharray: 24;
+}
+
+.app-loader-edge-5,
+.app-loader-edge-6 {
+  animation-delay: 0.48s;
+  stroke-dasharray: 22;
+}
+
+@keyframes app-loader-draw {
+  0% {
+    stroke-dashoffset: 48;
+    opacity: 0.35;
+  }
+
+  35%,
+  65% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: -48;
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-loader-cube,
+  .app-loader-edge,
+  .app-loader-assemble {
     animation: none;
+    opacity: 0.7;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
   }
 }

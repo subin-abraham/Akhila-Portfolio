@@ -14,7 +14,7 @@ import type { HeroEditorProps } from '@/types/components/admin-content';
 
 export function HeroEditor({ homepage }: HeroEditorProps) {
   return (
-    <main className="flex-1 px-6 py-8 sm:px-10">
+    <main className="px-6 py-8 sm:px-10">
       <AdminPageHeader
         eyebrow="Content"
         title="Hero"
