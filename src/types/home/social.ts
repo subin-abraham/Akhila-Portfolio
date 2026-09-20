@@ -1,4 +1,6 @@
-export type SocialPlatform = 'linkedin' | 'behance' | 'twitter';
+import type { SocialPlatform } from '@/features/home/lib/social-platforms';
+
+export type { SocialPlatform };
 
 export interface SocialLink {
   id: string;

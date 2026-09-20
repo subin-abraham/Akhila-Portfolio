@@ -50,6 +50,26 @@ export interface EducationRow {
   sort_order: number;
 }
 
+export interface BlogPostRow {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  body: string;
+  published_on: string;
+  sort_order: number;
+}
+
+export interface CaseStudyRow {
+  id: string;
+  title: string;
+  client: string | null;
+  period: string;
+  summary: string;
+  description: string;
+  sort_order: number;
+}
+
 export interface TechnicalExpertiseRow {
   id: string;
   category: string;

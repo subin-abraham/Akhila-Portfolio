@@ -31,6 +31,7 @@ const PROFESSIONAL_JOURNEY_SECTION_KEY = 'professional_journey';
 const EDUCATION_SECTION_KEY = 'education';
 const TECHNICAL_EXPERTISE_SECTION_KEY = 'technical_expertise';
 const TOOLS_AND_TECHNOLOGY_SECTION_KEY = 'tools_and_technology';
+const CONTACT_SECTION_KEY = 'contact';
 
 function mapHomepage(row: HomepageRow): HomepageContent {
   return {
@@ -68,6 +69,25 @@ function requireSection(
   }
 
   return section;
+}
+
+const DEFAULT_CONTACT_SECTION: HomepageSectionContent = {
+  id: 'contact-fallback',
+  sectionKey: 'contact',
+  eyebrow: 'Contact',
+  title: 'Get in',
+  accentTitle: 'Touch',
+  description:
+    'Have a project, collaboration, or role in mind? Send a note — I usually reply within a few days.',
+  highlightTarget: 'accent',
+};
+
+function getSectionOrDefault(
+  sections: HomepageSectionContent[],
+  sectionKey: string,
+  fallback: HomepageSectionContent
+): HomepageSectionContent {
+  return sections.find((item) => item.sectionKey === sectionKey) ?? fallback;
 }
 
 function mapNavLink(row: NavLinkRow): NavLink {
@@ -373,6 +393,11 @@ export async function getHomepageData(): Promise<HomepageData> {
     toolsAndTechnologySection: requireSection(
       sections,
       TOOLS_AND_TECHNOLOGY_SECTION_KEY
+    ),
+    contactSection: getSectionOrDefault(
+      sections,
+      CONTACT_SECTION_KEY,
+      DEFAULT_CONTACT_SECTION
     ),
     footer: mapFooterData(
       footerResult.data as FooterRow,

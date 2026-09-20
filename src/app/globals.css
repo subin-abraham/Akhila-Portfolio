@@ -30,6 +30,45 @@ body {
   font-family: var(--font-outfit), sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 7rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+@keyframes contact-toast-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(-0.75rem);
+  }
+
+  12%,
+  75% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+}
+
+.contact-toast {
+  animation: contact-toast-fade 4.5s ease forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-toast {
+    animation: none;
+  }
+}
+
 .font-display {
   font-family: var(--font-syne), sans-serif;
 }

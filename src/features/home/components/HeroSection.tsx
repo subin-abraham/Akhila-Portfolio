@@ -5,6 +5,7 @@ import { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 
 import { prefersReducedMotion } from '@/features/home/lib/prefers-reduced-motion';
+import { resolveSiteHref } from '@/features/home/lib/resolve-site-href';
 import type { HeroSectionProps } from '@/types/components/hero-section';
 
 const PROFILE_IMAGE_SRC = '/images/Profile_Photo.jpeg';
@@ -70,7 +71,7 @@ export function HeroSection({ homepage }: HeroSectionProps) {
     <section
       ref={sectionRef}
       id="home"
-      className="grid items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16"
+      className="grid scroll-mt-28 items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16"
     >
       <div className="flex max-w-xl flex-col items-start">
         <h1
@@ -88,7 +89,7 @@ export function HeroSection({ homepage }: HeroSectionProps) {
         <a
           data-hero-cta
           id="hero-cta"
-          href={homepage.ctaHref}
+          href={resolveSiteHref(homepage.ctaHref)}
           title={homepage.ctaLabel}
           aria-label={homepage.ctaLabel}
           className="home-cta mt-8 inline-flex items-center gap-2 rounded-lg bg-home-accent px-5 py-3 text-sm font-semibold text-home-ink transition-transform hover:scale-[1.02]"

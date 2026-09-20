@@ -1,4 +1,5 @@
 import { SocialIcons } from '@/features/home/components/SocialIcons';
+import { resolveSiteHref } from '@/features/home/lib/resolve-site-href';
 import type { SiteFooterProps } from '@/types/components/site-footer';
 
 function FooterMark() {
@@ -144,12 +145,13 @@ export function SiteFooter({ footer, socialLinks }: SiteFooterProps) {
                 <p className="site-footer-column-title">{column.title}</p>
                 <ul className="mt-4 flex flex-col gap-2.5">
                   {column.links.map((link) => {
-                    const isExternal = link.href.startsWith('http');
+                    const href = resolveSiteHref(link.href);
+                    const isExternal = href.startsWith('http');
 
                     return (
                       <li key={link.id}>
                         <a
-                          href={link.href}
+                          href={href}
                           {...(isExternal
                             ? {
                                 target: '_blank',
@@ -175,7 +177,7 @@ export function SiteFooter({ footer, socialLinks }: SiteFooterProps) {
           </p>
           <a
             id="footer-cta"
-            href={content.ctaHref}
+            href={resolveSiteHref(content.ctaHref)}
             title={content.ctaLabel}
             aria-label={content.ctaLabel}
             className="inline-flex items-center gap-2 text-sm font-medium text-home-accent transition-colors hover:text-white"
