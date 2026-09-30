@@ -1,3 +1,4 @@
+import { ContactSection } from '@/features/home/components/ContactSection';
 import { EducationSection } from '@/features/home/components/EducationSection';
 import { HeroSection } from '@/features/home/components/HeroSection';
 import { ProfessionalJourneySection } from '@/features/home/components/ProfessionalJourneySection';
@@ -6,9 +7,12 @@ import { SiteHeader } from '@/features/home/components/SiteHeader';
 import { TechnicalExpertiseSection } from '@/features/home/components/TechnicalExpertiseSection';
 import { ToolsAndTechnologySection } from '@/features/home/components/ToolsAndTechnologySection';
 import { WorkedWithSection } from '@/features/home/components/WorkedWithSection';
+import { createMathChallenge } from '@/features/home/lib/contact-math-challenge';
 import type { HomePageProps } from '@/types/components/home-page';
 
 export function HomePage({ data }: HomePageProps) {
+  const contactChallenge = createMathChallenge();
+
   return (
     <div className="flex min-h-full flex-1 flex-col bg-home-bg text-white">
       <SiteHeader navLinks={data.navLinks} socialLinks={data.socialLinks} />
@@ -31,6 +35,10 @@ export function HomePage({ data }: HomePageProps) {
           <ToolsAndTechnologySection
             section={data.toolsAndTechnologySection}
             categories={data.toolsAndTechnology}
+          />
+          <ContactSection
+            section={data.contactSection}
+            challenge={contactChallenge}
           />
         </main>
       </div>

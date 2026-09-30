@@ -1,3 +1,5 @@
+export type { BlogPost } from '@/types/home/blog';
+export type { CaseStudy } from '@/types/home/case-study';
 export type { EducationItem } from '@/types/home/education';
 export type {
   FooterContent,
@@ -20,6 +22,8 @@ export type {
 } from '@/types/home/tools-and-technology';
 export type { WorkedWithItem } from '@/types/home/worked-with';
 export type {
+  BlogPostRow,
+  CaseStudyRow,
   EducationRow,
   FooterLinkRow,
   FooterRow,

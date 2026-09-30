@@ -1,3 +1,7 @@
+import {
+  filterLinksBySiteSettings,
+  getSiteSettings,
+} from '@/features/home/lib/site-settings';
 import { createClient } from '@/lib/supabase/server';
 import type {
   EducationItem,
@@ -31,6 +35,7 @@ const PROFESSIONAL_JOURNEY_SECTION_KEY = 'professional_journey';
 const EDUCATION_SECTION_KEY = 'education';
 const TECHNICAL_EXPERTISE_SECTION_KEY = 'technical_expertise';
 const TOOLS_AND_TECHNOLOGY_SECTION_KEY = 'tools_and_technology';
+const CONTACT_SECTION_KEY = 'contact';
 
 function mapHomepage(row: HomepageRow): HomepageContent {
   return {
@@ -70,6 +75,25 @@ function requireSection(
   return section;
 }
 
+const DEFAULT_CONTACT_SECTION: HomepageSectionContent = {
+  id: 'contact-fallback',
+  sectionKey: 'contact',
+  eyebrow: 'Contact',
+  title: 'Get in',
+  accentTitle: 'Touch',
+  description:
+    'Have a project, collaboration, or role in mind? Send a note — I usually reply within a few days.',
+  highlightTarget: 'accent',
+};
+
+function getSectionOrDefault(
+  sections: HomepageSectionContent[],
+  sectionKey: string,
+  fallback: HomepageSectionContent
+): HomepageSectionContent {
+  return sections.find((item) => item.sectionKey === sectionKey) ?? fallback;
+}
+
 function mapNavLink(row: NavLinkRow): NavLink {
   return {
     id: row.id,
@@ -92,7 +116,6 @@ function mapWorkedWith(row: WorkedWithRow): WorkedWithItem {
   return {
     id: row.id,
     name: row.name,
-    logoUrl: row.logo_url,
     sortOrder: row.sort_order,
   };
 }
@@ -248,6 +271,7 @@ export async function getHomepageData(): Promise<HomepageData> {
     sectionsResult,
     footerResult,
     footerLinksResult,
+    siteSettings,
   ] = await Promise.all([
     supabase.from('homepage').select('*').limit(1).single(),
     supabase.from('nav_links').select('*').order('sort_order', { ascending: true }),
@@ -282,6 +306,7 @@ export async function getHomepageData(): Promise<HomepageData> {
       .select('*')
       .order('column_sort_order', { ascending: true })
       .order('sort_order', { ascending: true }),
+    getSiteSettings(),
   ]);
 
   if (homepageResult.error) {
@@ -346,9 +371,18 @@ export async function getHomepageData(): Promise<HomepageData> {
     mapHomepageSection
   );
 
+  const navLinks = filterLinksBySiteSettings(
+    (navResult.data as NavLinkRow[]).map(mapNavLink),
+    siteSettings,
+  );
+  const footerLinkRows = filterLinksBySiteSettings(
+    footerLinksResult.data as FooterLinkRow[],
+    siteSettings,
+  );
+
   return {
     homepage: mapHomepage(homepageResult.data as HomepageRow),
-    navLinks: (navResult.data as NavLinkRow[]).map(mapNavLink),
+    navLinks,
     socialLinks: (socialResult.data as SocialLinkRow[]).map(mapSocialLink),
     workedWith: (workedWithResult.data as WorkedWithRow[]).map(mapWorkedWith),
     professionalJourney: (journeyResult.data as ProfessionalJourneyRow[]).map(
@@ -374,9 +408,11 @@ export async function getHomepageData(): Promise<HomepageData> {
       sections,
       TOOLS_AND_TECHNOLOGY_SECTION_KEY
     ),
-    footer: mapFooterData(
-      footerResult.data as FooterRow,
-      footerLinksResult.data as FooterLinkRow[]
+    contactSection: getSectionOrDefault(
+      sections,
+      CONTACT_SECTION_KEY,
+      DEFAULT_CONTACT_SECTION
     ),
+    footer: mapFooterData(footerResult.data as FooterRow, footerLinkRows),
   };
 }
