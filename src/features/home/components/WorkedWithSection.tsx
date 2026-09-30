@@ -1,11 +1,9 @@
-import Image from 'next/image';
-
 import type {
-  LogoRowProps,
+  CompanyRowProps,
   WorkedWithSectionProps,
 } from '@/types/components/worked-with-section';
 
-function LogoRow({ items, keyPrefix, inert = false }: LogoRowProps) {
+function CompanyRow({ items, keyPrefix, inert = false }: CompanyRowProps) {
   return (
     <ul
       className="flex shrink-0 items-center gap-3 pr-3"
@@ -16,14 +14,9 @@ function LogoRow({ items, keyPrefix, inert = false }: LogoRowProps) {
           key={`${keyPrefix}-${item.id}`}
           className="flex h-14 w-40 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-home-logo px-4 sm:w-44"
         >
-          <Image
-            src={item.logoUrl}
-            alt={inert ? '' : `${item.name} logo`}
-            width={110}
-            height={32}
-            unoptimized
-            className="h-7 w-auto opacity-80"
-          />
+          <span className="truncate text-sm font-medium tracking-wide text-white/85">
+            {item.name}
+          </span>
         </li>
       ))}
     </ul>
@@ -36,8 +29,8 @@ export function WorkedWithSection({ items }: WorkedWithSectionProps) {
       <p className="text-sm text-home-muted">Worked with</p>
       <div className="worked-with-marquee">
         <div className="worked-with-track">
-          <LogoRow items={items} keyPrefix="a" />
-          <LogoRow items={items} keyPrefix="b" inert />
+          <CompanyRow items={items} keyPrefix="a" />
+          <CompanyRow items={items} keyPrefix="b" inert />
         </div>
       </div>
     </section>

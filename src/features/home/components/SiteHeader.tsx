@@ -3,6 +3,7 @@
 import { useEffect, useId, useState } from 'react';
 
 import { SocialIcons } from '@/features/home/components/SocialIcons';
+import { resolveSiteHref } from '@/features/home/lib/resolve-site-href';
 import type { SiteHeaderProps } from '@/types/components/site-header';
 
 export function SiteHeader({ navLinks, socialLinks }: SiteHeaderProps) {
@@ -50,7 +51,7 @@ export function SiteHeader({ navLinks, socialLinks }: SiteHeaderProps) {
             {navLinks.map((link) => (
               <li key={link.id}>
                 <a
-                  href={link.href}
+                  href={resolveSiteHref(link.href)}
                   className="text-sm font-medium text-home-muted transition-colors hover:text-white"
                 >
                   {link.label}
@@ -96,7 +97,7 @@ export function SiteHeader({ navLinks, socialLinks }: SiteHeaderProps) {
               {navLinks.map((link) => (
                 <li key={link.id}>
                   <a
-                    href={link.href}
+                    href={resolveSiteHref(link.href)}
                     tabIndex={isMenuOpen ? undefined : -1}
                     onClick={() => setIsMenuOpen(false)}
                     className="block rounded-lg px-3 py-2.5 text-sm font-medium text-home-muted transition-colors hover:bg-white/5 hover:text-white"

@@ -29,5 +29,6 @@ export interface HomepageData {
   technicalExpertiseSection: HomepageSectionContent;
   toolsAndTechnology: ToolsAndTechnologyCategory[];
   toolsAndTechnologySection: HomepageSectionContent;
+  contactSection: HomepageSectionContent;
   footer: FooterData;
 }
