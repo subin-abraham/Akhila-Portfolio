@@ -189,14 +189,12 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
         </div>
 
         <ContactMessageField
-          key={formKey}
           defaultValue={defaults.message}
           hasError={hasError}
           describedBy={fieldDescribedBy}
         />
 
         <MathChallengeField
-          key={activeChallenge.token}
           idPrefix="contact"
           challenge={activeChallenge}
           hasError={hasError}
