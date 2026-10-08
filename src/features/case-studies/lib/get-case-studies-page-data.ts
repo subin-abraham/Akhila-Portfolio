@@ -1,23 +1,10 @@
-import {
-  filterLinksBySiteSettings,
-  getSiteSettings,
-} from '@/features/home/lib/site-settings';
 import { createClient } from '@/lib/supabase/server';
 import type { CaseStudiesPageData } from '@/types/components/case-studies-page';
 import type {
   CaseStudy,
   CaseStudyRow,
-  FooterContent,
-  FooterData,
-  FooterLinkColumn,
-  FooterLinkRow,
-  FooterRow,
   HomepageSectionContent,
   HomepageSectionRow,
-  NavLink,
-  NavLinkRow,
-  SocialLink,
-  SocialLinkRow,
 } from '@/types/home';
 import type { SectionHighlightTarget } from '@/types/home/homepage-section';
 
@@ -38,24 +25,6 @@ function mapHomepageSection(row: HomepageSectionRow): HomepageSectionContent {
   };
 }
 
-function mapNavLink(row: NavLinkRow): NavLink {
-  return {
-    id: row.id,
-    label: row.label,
-    href: row.href,
-    sortOrder: row.sort_order,
-  };
-}
-
-function mapSocialLink(row: SocialLinkRow): SocialLink {
-  return {
-    id: row.id,
-    platform: row.platform,
-    href: row.href,
-    sortOrder: row.sort_order,
-  };
-}
-
 function mapCaseStudy(row: CaseStudyRow): CaseStudy {
   return {
     id: row.id,
@@ -68,76 +37,10 @@ function mapCaseStudy(row: CaseStudyRow): CaseStudy {
   };
 }
 
-function mapFooter(row: FooterRow): FooterContent {
-  return {
-    id: row.id,
-    brandName: row.brand_name,
-    tagline: row.tagline,
-    statusLabel: row.status_label,
-    ctaLabel: row.cta_label,
-    ctaHref: row.cta_href,
-    copyrightName: row.copyright_name,
-  };
-}
-
-function groupFooterLinks(rows: FooterLinkRow[]): FooterLinkColumn[] {
-  const columns: FooterLinkColumn[] = [];
-  const columnIndex = new Map<string, number>();
-
-  const sortedRows = [...rows].sort((left, right) => {
-    if (left.column_sort_order !== right.column_sort_order) {
-      return left.column_sort_order - right.column_sort_order;
-    }
-
-    return left.sort_order - right.sort_order;
-  });
-
-  for (const row of sortedRows) {
-    let index = columnIndex.get(row.column_key);
-
-    if (index === undefined) {
-      index = columns.length;
-      columnIndex.set(row.column_key, index);
-      columns.push({
-        columnKey: row.column_key,
-        title: row.column_title,
-        links: [],
-      });
-    }
-
-    columns[index]?.links.push({
-      id: row.id,
-      label: row.label,
-      href: row.href,
-      sortOrder: row.sort_order,
-    });
-  }
-
-  return columns;
-}
-
-function mapFooterData(
-  contentRow: FooterRow,
-  linkRows: FooterLinkRow[]
-): FooterData {
-  return {
-    content: mapFooter(contentRow),
-    columns: groupFooterLinks(linkRows),
-  };
-}
-
 export async function getCaseStudiesPageData(): Promise<CaseStudiesPageData> {
   const supabase = await createClient();
 
-  const [
-    itemsResult,
-    sectionsResult,
-    navResult,
-    socialResult,
-    footerResult,
-    footerLinksResult,
-    siteSettings,
-  ] = await Promise.all([
+  const [itemsResult, sectionsResult] = await Promise.all([
     supabase
       .from('case_studies')
       .select('*')
@@ -146,18 +49,6 @@ export async function getCaseStudiesPageData(): Promise<CaseStudiesPageData> {
       .from('homepage_sections')
       .select('*')
       .eq('section_key', CASE_STUDIES_SECTION_KEY),
-    supabase.from('nav_links').select('*').order('sort_order', { ascending: true }),
-    supabase
-      .from('social_links')
-      .select('*')
-      .order('sort_order', { ascending: true }),
-    supabase.from('footer').select('*').limit(1).single(),
-    supabase
-      .from('footer_links')
-      .select('*')
-      .order('column_sort_order', { ascending: true })
-      .order('sort_order', { ascending: true }),
-    getSiteSettings(),
   ]);
 
   if (itemsResult.error) {
@@ -172,24 +63,6 @@ export async function getCaseStudiesPageData(): Promise<CaseStudiesPageData> {
     );
   }
 
-  if (navResult.error) {
-    throw new Error(`Failed to load nav links: ${navResult.error.message}`);
-  }
-
-  if (socialResult.error) {
-    throw new Error(`Failed to load social links: ${socialResult.error.message}`);
-  }
-
-  if (footerResult.error) {
-    throw new Error(`Failed to load footer: ${footerResult.error.message}`);
-  }
-
-  if (footerLinksResult.error) {
-    throw new Error(
-      `Failed to load footer links: ${footerLinksResult.error.message}`
-    );
-  }
-
   const sectionRow = (sectionsResult.data as HomepageSectionRow[])[0];
 
   if (!sectionRow) {
@@ -201,14 +74,5 @@ export async function getCaseStudiesPageData(): Promise<CaseStudiesPageData> {
   return {
     section: mapHomepageSection(sectionRow),
     items: (itemsResult.data as CaseStudyRow[]).map(mapCaseStudy),
-    navLinks: filterLinksBySiteSettings(
-      (navResult.data as NavLinkRow[]).map(mapNavLink),
-      siteSettings,
-    ),
-    socialLinks: (socialResult.data as SocialLinkRow[]).map(mapSocialLink),
-    footer: mapFooterData(
-      footerResult.data as FooterRow,
-      filterLinksBySiteSettings(footerLinksResult.data as FooterLinkRow[], siteSettings),
-    ),
   };
 }

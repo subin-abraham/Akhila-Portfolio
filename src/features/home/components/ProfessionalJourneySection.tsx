@@ -1,10 +1,11 @@
 'use client';
 
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, type CSSProperties } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 import { SectionHeading } from '@/features/home/components/SectionHeading';
+import { ShippedWorksCard } from '@/features/home/components/ShippedWorksCard';
 import { prefersReducedMotion } from '@/features/home/lib/prefers-reduced-motion';
 import type { ProfessionalJourneySectionProps } from '@/types/components/professional-journey-section';
 
@@ -17,67 +18,45 @@ export function ProfessionalJourneySection({
   const sectionRef = useRef<HTMLElement>(null);
 
   useLayoutEffect(() => {
-    const section = sectionRef.current;
+    const root = sectionRef.current;
 
-    if (!section || items.length === 0 || prefersReducedMotion()) {
+    if (!root || items.length === 0 || prefersReducedMotion()) {
       return;
     }
 
     const context = gsap.context(() => {
-      const entries = section.querySelectorAll('[data-journey-item]');
+      const line = root.querySelector('[data-bento-timeline-line]');
+      const milestones = root.querySelectorAll('[data-journey-item]');
 
-      entries.forEach((entry) => {
-        const dot = entry.querySelector('[data-journey-dot]');
-        const line = entry.querySelector('[data-journey-line]');
-        const body = entry.querySelector('[data-journey-body]');
-
-        const entryTimeline = gsap.timeline({
+      if (line) {
+        gsap.from(line, {
+          scaleX: 0,
+          transformOrigin: 'left center',
+          duration: 0.85,
+          ease: 'power2.out',
           scrollTrigger: {
-            trigger: entry,
-            start: 'top 88%',
+            trigger: root,
+            start: 'top 80%',
             toggleActions: 'play reverse play reverse',
           },
         });
+      }
 
-        if (dot) {
-          entryTimeline.from(
-            dot,
-            {
-              scale: 0.6,
-              duration: 0.35,
-              ease: 'back.out(2.2)',
-            },
-            0
-          );
-        }
-
-        if (line) {
-          entryTimeline.from(
-            line,
-            {
-              scaleY: 0,
-              transformOrigin: 'top center',
-              duration: 0.8,
-              ease: 'power1.out',
-            },
-            0.05
-          );
-        }
-
-        if (body) {
-          entryTimeline.from(
-            body,
-            {
-              y: 18,
-              opacity: 0.35,
-              duration: 0.55,
-              ease: 'power2.out',
-            },
-            0.08
-          );
-        }
+      milestones.forEach((entry, index) => {
+        gsap.from(entry, {
+          y: 16,
+          autoAlpha: 0,
+          duration: 0.45,
+          delay: index * 0.07,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: root,
+            start: 'top 80%',
+            toggleActions: 'play reverse play reverse',
+          },
+        });
       });
-    }, section);
+    }, root);
 
     return () => {
       context.revert();
@@ -93,62 +72,59 @@ export function ProfessionalJourneySection({
       ref={sectionRef}
       id="professional-journey"
       aria-labelledby="professional-journey-heading"
-      className="flex scroll-mt-28 flex-col gap-8 sm:gap-10"
+      className="home-bento-card journey-bento-card scroll-mt-28"
+      style={{ '--bento-timeline-count': String(items.length) } as CSSProperties}
     >
       <SectionHeading
         section={section}
         headingId="professional-journey-heading"
+        variant="inCard"
+        hideDescription
+        headingClassName="bento-card-title"
       />
 
-      <ol className="professional-journey-list">
-        {items.map((item, index) => {
-          const isLast = index === items.length - 1;
+      <div className="journey-bento-body">
+        <div className="bento-timeline-wrap journey-timeline-wrap">
+          <span
+            data-bento-timeline-line
+            className="bento-timeline-line"
+            aria-hidden="true"
+          />
+          <ol className="bento-timeline">
+            {items.map((item) => (
+              <li key={item.id} data-journey-item className="bento-timeline-item">
+                <span className="bento-timeline-dot-mobile" aria-hidden="true" />
+                <div className="bento-timeline-content">
+                  <p className="bento-timeline-period">{item.period}</p>
+                  <div className="bento-timeline-rail" aria-hidden="true">
+                    <span className="bento-timeline-dot" />
+                  </div>
+                  <div className="bento-timeline-body">
+                    <h3 className="bento-timeline-title">{item.role}</h3>
+                    <p className="bento-timeline-meta">
+                      {item.organization}
+                      {item.location ? (
+                        <>
+                          <span
+                            aria-hidden="true"
+                            className="mx-1.5 text-home-heading/25"
+                          >
+                            ·
+                          </span>
+                          <span>{item.location}</span>
+                        </>
+                      ) : null}
+                    </p>
+                    <p className="sr-only">{item.description}</p>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
 
-          return (
-            <li
-              key={item.id}
-              data-journey-item
-              className="professional-journey-item"
-            >
-              <div className="professional-journey-rail" aria-hidden="true">
-                <span data-journey-dot className="professional-journey-dot" />
-                {!isLast ? (
-                  <span
-                    data-journey-line
-                    className="professional-journey-line"
-                  />
-                ) : null}
-              </div>
-
-              <div
-                data-journey-body
-                className="flex min-w-0 flex-1 flex-col gap-2 pb-10 sm:pb-12"
-              >
-                <p className="text-sm font-medium text-home-accent">
-                  {item.period}
-                </p>
-                <h3 className="font-display text-xl font-semibold tracking-tight text-white sm:text-2xl">
-                  {item.role}
-                </h3>
-                <p className="text-base text-home-muted">
-                  <span className="text-white/90">{item.organization}</span>
-                  {item.location ? (
-                    <>
-                      <span aria-hidden="true" className="mx-2 text-white/30">
-                        ·
-                      </span>
-                      <span>{item.location}</span>
-                    </>
-                  ) : null}
-                </p>
-                <p className="mt-1 max-w-2xl text-base leading-7 text-home-muted">
-                  {item.description}
-                </p>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
+        <ShippedWorksCard href="/shipped" variant="inset" />
+      </div>
     </section>
   );
 }

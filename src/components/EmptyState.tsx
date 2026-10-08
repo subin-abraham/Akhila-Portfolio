@@ -6,7 +6,7 @@ export function EmptyState({
   className = '',
 }: EmptyStateProps) {
   const rootClassName = [
-    'flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/15 bg-white/[0.03] px-6 py-12 text-center sm:px-10 sm:py-14',
+    'flex flex-col items-center justify-center rounded-2xl border border-dashed border-home-input-border bg-home-surface px-6 py-12 text-center sm:px-10 sm:py-14',
     className,
   ]
     .filter(Boolean)
@@ -14,7 +14,7 @@ export function EmptyState({
 
   return (
     <div role="status" className={rootClassName}>
-      <p className="font-display text-lg font-semibold tracking-tight text-white sm:text-xl">
+      <p className="font-display text-lg font-semibold tracking-tight text-home-heading sm:text-xl">
         {title}
       </p>
       {description ? (

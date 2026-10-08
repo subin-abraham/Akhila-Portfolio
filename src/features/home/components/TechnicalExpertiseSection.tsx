@@ -43,17 +43,15 @@ export function TechnicalExpertiseSection({
         },
       });
 
-      panels.forEach((panel, panelIndex) => {
-        const fromX = panelIndex % 2 === 0 ? -48 : 48;
+      panels.forEach((panel) => {
         const skills = panel.querySelectorAll('[data-expertise-skill]');
         const fills = panel.querySelectorAll<HTMLElement>('[data-expertise-fill]');
         const values = panel.querySelectorAll<HTMLElement>('[data-expertise-value]');
 
         gsap.from(panel, {
-          x: fromX,
+          y: 28,
           autoAlpha: 0,
-          rotateZ: panelIndex % 2 === 0 ? -1.5 : 1.5,
-          duration: 0.75,
+          duration: 0.7,
           ease: 'power3.out',
           scrollTrigger: {
             trigger: panel,
@@ -63,10 +61,10 @@ export function TechnicalExpertiseSection({
         });
 
         gsap.from(skills, {
-          y: 22,
+          y: 14,
           autoAlpha: 0,
-          duration: 0.45,
-          stagger: 0.07,
+          duration: 0.4,
+          stagger: 0.06,
           ease: 'power2.out',
           scrollTrigger: {
             trigger: panel,
@@ -134,13 +132,11 @@ export function TechnicalExpertiseSection({
       aria-labelledby="technical-expertise-heading"
       className="expertise-section relative scroll-mt-28"
     >
-      <div className="expertise-backdrop" aria-hidden="true" />
-
-      <div className="relative flex flex-col gap-10 sm:gap-12">
+      <div className="relative flex flex-col gap-8 sm:gap-10">
         <SectionHeading
           section={section}
           headingId="technical-expertise-heading"
-          headingClassName="font-display text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
+          headingClassName="font-display text-3xl font-normal tracking-tight sm:text-4xl lg:text-[2.75rem]"
           titleMotionAttr="data-expertise-heading"
           maskTitle
         />
@@ -153,24 +149,22 @@ export function TechnicalExpertiseSection({
               className="expertise-panel"
             >
               <div className="expertise-panel-top">
-                <span className="expertise-index" aria-hidden="true">
-                  {formatIndex(categoryIndex)}
-                </span>
-                <h3 className="font-display text-xl font-semibold tracking-tight text-white sm:text-2xl">
+                <p className="expertise-label">{formatIndex(categoryIndex)}</p>
+                <h3 className="font-display text-xl font-normal tracking-tight text-home-heading sm:text-2xl">
                   {category.category}
                 </h3>
               </div>
 
-              <ul className="mt-8 flex flex-col gap-5">
+              <ul className="flex flex-col gap-5">
                 {category.skills.map((skill) => (
                   <li key={skill.id} data-expertise-skill className="min-w-0">
                     <div className="mb-2 flex items-baseline justify-between gap-4">
-                      <span className="text-sm text-white/90 sm:text-base">
+                      <span className="text-sm text-home-heading/85 sm:text-[0.9375rem]">
                         {skill.name}
                       </span>
                       <span
                         data-expertise-value
-                        className="font-display text-sm font-semibold tabular-nums text-home-accent"
+                        className="text-xs font-medium tabular-nums text-home-muted"
                       >
                         0%
                       </span>

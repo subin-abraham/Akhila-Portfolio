@@ -97,14 +97,14 @@ export function CaseStudyModal({ item, onClose }: CaseStudyModalProps) {
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        className="relative z-[81] flex max-h-[min(88vh,44rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/12 bg-home-bg shadow-[0_24px_64px_rgb(0_0_0/0.65)]"
+        className="relative z-[81] flex max-h-[min(88vh,44rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-home-border bg-home-bg shadow-[0_24px_64px_rgb(0_0_0/0.65)]"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-7 sm:py-5">
+        <div className="flex items-start justify-between gap-4 border-b border-home-border px-5 py-4 sm:px-7 sm:py-5">
           <div className="min-w-0">
             <p className="text-sm font-medium text-home-accent">{item.period}</p>
             <h2
               id={titleId}
-              className="mt-2 font-display text-2xl font-semibold tracking-tight text-white sm:text-3xl"
+              className="mt-2 font-display text-2xl font-semibold tracking-tight text-home-heading sm:text-3xl"
             >
               {item.title}
             </h2>
@@ -119,7 +119,7 @@ export function CaseStudyModal({ item, onClose }: CaseStudyModalProps) {
             title="Close case study"
             aria-label="Close case study"
             onClick={onClose}
-            className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-white/15 bg-white/5 text-white transition-colors hover:border-white/25 hover:bg-white/10"
+            className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-home-input-border bg-home-surface text-home-heading transition-colors hover:border-home-border hover:bg-home-surface-hover"
           >
             <span aria-hidden="true" className="text-xl leading-none">
               ×
@@ -132,7 +132,7 @@ export function CaseStudyModal({ item, onClose }: CaseStudyModalProps) {
           className="overflow-y-auto px-5 py-5 sm:px-7 sm:py-6"
         >
           <div className="flex flex-col gap-4">
-            <p className="text-base leading-7 text-white/85 sm:text-lg sm:leading-8">
+            <p className="text-base leading-7 text-home-heading/85 sm:text-lg sm:leading-8">
               {item.summary}
             </p>
             {paragraphs.map((paragraph, paragraphIndex) => (
