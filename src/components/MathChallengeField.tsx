@@ -31,9 +31,20 @@ export function MathChallengeField({
   }
 
   return (
-    <div className={className ?? 'flex flex-col gap-2'}>
-      <div className="flex items-end justify-between gap-3">
-        <p className="text-sm font-medium text-white">Security check</p>
+    <div className={className ?? 'flex flex-col gap-1.5'}>
+      <p className="text-sm font-medium text-home-heading">Security check</p>
+
+      <div className="flex items-center gap-2">
+        <Image
+          id={imageId}
+          src={activeChallenge.imageDataUrl}
+          alt="Math challenge image"
+          width={168}
+          height={44}
+          unoptimized
+          draggable={false}
+          className="h-11 w-[168px] select-none object-contain"
+        />
         <button
           id={refreshId}
           type="button"
@@ -42,7 +53,7 @@ export function MathChallengeField({
           aria-controls={imageId}
           disabled={isRefreshing}
           onClick={handleRefresh}
-          className="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-white/15 bg-white/[0.04] text-home-muted transition hover:border-home-accent/40 hover:text-home-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-accent disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-home-input-border bg-home-input text-home-muted transition hover:border-home-accent/40 hover:text-home-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-accent disabled:cursor-not-allowed disabled:opacity-60"
         >
           <svg
             aria-hidden="true"
@@ -60,22 +71,9 @@ export function MathChallengeField({
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-white/15 bg-black/30 p-1">
-        <Image
-          id={imageId}
-          src={activeChallenge.imageDataUrl}
-          alt="Math challenge image"
-          width={240}
-          height={72}
-          unoptimized
-          draggable={false}
-          className="h-[72px] w-full max-w-[240px] select-none object-contain"
-        />
-      </div>
-
       <input type="hidden" name={tokenName} value={activeChallenge.token} />
 
-      <label htmlFor={answerId} className="text-sm font-medium text-white">
+      <label htmlFor={answerId} className="text-sm font-medium text-home-heading">
         Your answer
       </label>
       <input
@@ -89,7 +87,7 @@ export function MathChallengeField({
         defaultValue=""
         aria-invalid={hasError}
         aria-describedby={answerDescribedBy}
-        className="rounded-lg border border-white/15 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-home-muted focus:border-home-accent/50"
+        className="rounded-lg border border-home-input-border bg-home-input px-4 py-3 text-sm text-home-heading outline-none transition placeholder:text-home-muted focus:border-home-accent/50"
         placeholder="Result shown above"
       />
       <p id={hintId} className="sr-only">

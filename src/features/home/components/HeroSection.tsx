@@ -1,118 +1,85 @@
 'use client';
 
-import Image from 'next/image';
-import { useLayoutEffect, useRef } from 'react';
-import gsap from 'gsap';
+import { motion, useReducedMotion } from 'framer-motion';
 
-import { prefersReducedMotion } from '@/features/home/lib/prefers-reduced-motion';
 import { resolveSiteHref } from '@/features/home/lib/resolve-site-href';
 import type { HeroSectionProps } from '@/types/components/hero-section';
 
-const PROFILE_IMAGE_SRC = '/images/Profile_Photo.jpeg';
-const PROFILE_IMAGE_ALT = 'Portrait of Akhila Anns Jacob';
+function shortDescriptionFromIntro(intro: string) {
+  const trimmed = intro.trim();
+  const firstSentence = trimmed.split(/(?<=[.!?])\s+/)[0]?.trim();
+
+  if (firstSentence) {
+    return firstSentence;
+  }
+
+  if (trimmed.length <= 180) {
+    return trimmed;
+  }
+
+  return `${trimmed.slice(0, 177).trimEnd()}…`;
+}
 
 export function HeroSection({ homepage }: HeroSectionProps) {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useLayoutEffect(() => {
-    const section = sectionRef.current;
-
-    if (!section || prefersReducedMotion()) {
-      return;
-    }
-
-    const context = gsap.context(() => {
-      const timeline = gsap.timeline({
-        defaults: { ease: 'power2.out' },
-      });
-
-      timeline
-        .from('[data-hero-title]', {
-          y: 36,
-          autoAlpha: 0,
-          duration: 0.85,
-        })
-        .from(
-          '[data-hero-intro]',
-          {
-            y: 24,
-            autoAlpha: 0,
-            duration: 0.65,
-          },
-          '-=0.45'
-        )
-        .from(
-          '[data-hero-cta]',
-          {
-            y: 18,
-            autoAlpha: 0,
-            duration: 0.55,
-          },
-          '-=0.35'
-        )
-        .from(
-          '[data-hero-portrait]',
-          {
-            scale: 0.9,
-            autoAlpha: 0,
-            duration: 1,
-            ease: 'power3.out',
-          },
-          0.12
-        );
-    }, section);
-
-    return () => {
-      context.revert();
-    };
-  }, []);
+  const reduceMotion = useReducedMotion();
+  const shortDescription = shortDescriptionFromIntro(homepage.intro);
 
   return (
-    <section
-      ref={sectionRef}
-      id="home"
-      className="grid scroll-mt-28 items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16"
-    >
-      <div className="flex max-w-xl flex-col items-start">
-        <h1
-          data-hero-title
-          className="font-display text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl"
-        >
-          {homepage.fullName}
-        </h1>
-        <p
-          data-hero-intro
-          className="mt-6 text-base leading-7 text-home-muted sm:text-lg sm:leading-8"
-        >
-          {homepage.intro}
-        </p>
-        <a
-          data-hero-cta
-          id="hero-cta"
-          href={resolveSiteHref(homepage.ctaHref)}
-          title={homepage.ctaLabel}
-          aria-label={homepage.ctaLabel}
-          className="home-cta mt-8 inline-flex items-center gap-2 rounded-lg bg-home-accent px-5 py-3 text-sm font-semibold text-home-ink transition-transform hover:scale-[1.02]"
-        >
-          <span>{homepage.ctaLabel}</span>
-          <span aria-hidden="true">&gt;</span>
-        </a>
+    <section id="home" className="hero-stage">
+      <div className="hero-atmosphere" aria-hidden="true">
+        <motion.div
+          className="hero-glow"
+          animate={
+            reduceMotion
+              ? { opacity: 0.7 }
+              : { opacity: [0.55, 0.85, 0.65, 0.8] }
+          }
+          transition={
+            reduceMotion
+              ? { duration: 0.01 }
+              : { duration: 14, repeat: Infinity, ease: 'easeInOut' }
+          }
+        />
+        <div className="hero-scanlines" />
+        <div className="hero-grain" />
+        <div className="hero-vignette" />
       </div>
 
-      <div className="flex justify-center lg:justify-end">
-        <div
-          data-hero-portrait
-          className="relative aspect-square w-full max-w-[22rem] overflow-hidden rounded-full sm:max-w-[26rem]"
+      <div className="hero-content">
+        <motion.h1
+          className="hero-title"
+          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
         >
-          <Image
-            src={PROFILE_IMAGE_SRC}
-            alt={PROFILE_IMAGE_ALT}
-            fill
-            priority
-            sizes="(max-width: 1024px) 80vw, 416px"
-            className="object-cover object-[center_20%]"
-          />
-        </div>
+          <span className="hero-title-line">Hi there,</span>
+          <span className="hero-title-line">I am {homepage.fullName}</span>
+        </motion.h1>
+
+        <motion.p
+          className="hero-intro"
+          initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {shortDescription}
+        </motion.p>
+
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <a
+            id="hero-cta"
+            href={resolveSiteHref(homepage.ctaHref)}
+            title={homepage.ctaLabel}
+            aria-label={homepage.ctaLabel}
+            className="hero-cta"
+          >
+            {homepage.ctaLabel}
+          </a>
+        </motion.div>
       </div>
     </section>
   );

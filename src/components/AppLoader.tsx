@@ -176,16 +176,24 @@ function AppLoaderGlobalViewport({
   variant: AppLoaderVariant;
 }) {
   return (
-    <div
-      className="pointer-events-auto fixed inset-0 z-[110] flex items-center justify-center bg-home-bg/70 text-home-accent backdrop-blur-[2px]"
-      aria-busy="true"
-    >
-      <AppLoader
-        variant={variant}
-        size="lg"
-        label={label}
-        className="app-loader-global"
-      />
+    <div className="app-loader-viewport" aria-busy="true">
+      <div className="app-loader-progress" aria-hidden="true">
+        <span className="app-loader-progress-bar" />
+      </div>
+      <div className="app-loader-viewport-backdrop" aria-hidden="true" />
+      <div className="app-loader-viewport-center">
+        <div className="app-loader-viewport-orbit" aria-hidden="true">
+          <span className="app-loader-viewport-ring app-loader-viewport-ring-a" />
+          <span className="app-loader-viewport-ring app-loader-viewport-ring-b" />
+          <span className="app-loader-viewport-glow" />
+        </div>
+        <AppLoader
+          variant={variant}
+          size="lg"
+          label={label}
+          className="app-loader-global"
+        />
+      </div>
     </div>
   );
 }

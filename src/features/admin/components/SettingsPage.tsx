@@ -9,12 +9,16 @@ import {
   resetUserPassword,
 } from '@/features/admin/lib/auth-actions';
 import { useAdminAction } from '@/features/admin/lib/use-admin-action';
-import { updateSitePageFlags } from '@/features/admin/lib/settings-actions';
+import {
+  updateSitePageFlags,
+  updateSiteThemeSettings,
+} from '@/features/admin/lib/settings-actions';
 import type {
   AdminActionState,
   AdminAuthFormProps,
   SettingsPageProps,
 } from '@/types/components/admin-shell';
+import type { SiteThemeMode } from '@/types/home/site-settings';
 
 const INITIAL_STATE: AdminActionState = { error: null, success: null };
 
@@ -172,11 +176,6 @@ function SitePagesFlagsForm({
   const canToggle = Boolean(siteSettings.id) && !isPending;
 
   useEffect(() => {
-    setBlogEnabled(siteSettings.blogEnabled);
-    setCaseStudiesEnabled(siteSettings.caseStudiesEnabled);
-  }, [siteSettings.blogEnabled, siteSettings.caseStudiesEnabled]);
-
-  useEffect(() => {
     if (!state.error || !revertRef.current) {
       return;
     }
@@ -255,6 +254,132 @@ function SitePagesFlagsForm({
   );
 }
 
+function SiteThemeSettingsForm({
+  siteSettings,
+}: {
+  siteSettings: SettingsPageProps['siteSettings'];
+}) {
+  const { formAction, isPending, state } = useAdminAction({
+    action: updateSiteThemeSettings,
+    successFallbackMessage: 'Theme settings updated.',
+    pendingLabel: 'Saving theme settings…',
+  });
+  const [themeToggleEnabled, setThemeToggleEnabled] = useState(
+    siteSettings.themeToggleEnabled,
+  );
+  const [defaultTheme, setDefaultTheme] = useState(siteSettings.defaultTheme);
+  const revertRef = useRef<{
+    themeToggleEnabled: boolean;
+    defaultTheme: SiteThemeMode;
+  } | null>(null);
+  const statusId = 'admin-site-theme-status';
+  const defaultThemeId = 'admin-site-default-theme';
+  const canEdit = Boolean(siteSettings.id) && !isPending;
+
+  useEffect(() => {
+    if (!state.error || !revertRef.current) {
+      return;
+    }
+
+    setThemeToggleEnabled(revertRef.current.themeToggleEnabled);
+    setDefaultTheme(revertRef.current.defaultTheme);
+    revertRef.current = null;
+  }, [state.error]);
+
+  useEffect(() => {
+    if (state.success) {
+      revertRef.current = null;
+    }
+  }, [state.success]);
+
+  const saveThemeSettings = (
+    nextToggleEnabled: boolean,
+    nextDefaultTheme: SiteThemeMode,
+  ) => {
+    if (!siteSettings.id || isPending) {
+      return;
+    }
+
+    revertRef.current = {
+      themeToggleEnabled,
+      defaultTheme,
+    };
+    setThemeToggleEnabled(nextToggleEnabled);
+    setDefaultTheme(nextDefaultTheme);
+
+    const formData = new FormData();
+    formData.set('id', siteSettings.id);
+    formData.set('themeToggleEnabled', String(nextToggleEnabled));
+    formData.set('defaultTheme', nextDefaultTheme);
+
+    startTransition(() => {
+      formAction(formData);
+    });
+  };
+
+  return (
+    <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+      <h2 className="font-display text-xl font-semibold text-white">Appearance</h2>
+      <p className="mt-2 text-sm text-home-muted">
+        Control the public theme toggle and the default color mode for first-time visitors.
+      </p>
+
+      {!siteSettings.id ? (
+        <p className="mt-6 rounded-lg border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+          Site settings are not available yet. Apply the latest Supabase migration, then refresh
+          this page.
+        </p>
+      ) : null}
+
+      <div className="mt-6 space-y-3" aria-describedby={statusId}>
+        <SitePageToggle
+          id="admin-site-theme-toggle-enabled"
+          label="Theme toggle"
+          description="Show the light/dark switch in the site navigation."
+          checked={themeToggleEnabled}
+          disabled={!canEdit}
+          onChange={(next) => saveThemeSettings(next, defaultTheme)}
+        />
+
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
+          <label htmlFor={defaultThemeId} className="block text-sm font-medium text-white">
+            Default mode
+          </label>
+          <p id={`${defaultThemeId}-description`} className="mt-1 text-sm text-home-muted">
+            Used when a visitor has not chosen a theme yet. System follows the device preference.
+          </p>
+          <select
+            id={defaultThemeId}
+            name="defaultTheme"
+            value={defaultTheme}
+            disabled={!canEdit}
+            aria-describedby={`${defaultThemeId}-description`}
+            onChange={(event) => {
+              const next = event.target.value as SiteThemeMode;
+              saveThemeSettings(themeToggleEnabled, next);
+            }}
+            className={`${FIELD_CLASS} mt-3`}
+          >
+            <option value="dark" className="bg-[#121212] text-white">
+              Dark
+            </option>
+            <option value="light" className="bg-[#121212] text-white">
+              Light
+            </option>
+            <option value="system" className="bg-[#121212] text-white">
+              System
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div id={statusId} className="sr-only" aria-live="polite">
+        {isPending ? 'Saving theme settings…' : ''}
+      </div>
+    </section>
+  );
+}
+
 interface SitePageToggleProps {
   id: string;
   label: string;
@@ -321,12 +446,19 @@ export function SettingsPage({ currentUserEmail, siteSettings }: SettingsPagePro
         <p className="text-sm font-medium tracking-wide text-home-accent uppercase">Settings</p>
         <h1 className="font-display mt-2 text-3xl font-semibold text-white">Site &amp; account</h1>
         <p className="mt-3 text-sm text-home-muted">
-          Control public page visibility, register users, and reset passwords.
+          Control public page visibility, appearance, register users, and reset passwords.
         </p>
       </header>
 
       <div className="flex w-full flex-col gap-6">
-        <SitePagesFlagsForm siteSettings={siteSettings} />
+        <SitePagesFlagsForm
+          key={`${siteSettings.id}-${siteSettings.blogEnabled}-${siteSettings.caseStudiesEnabled}`}
+          siteSettings={siteSettings}
+        />
+        <SiteThemeSettingsForm
+          key={`${siteSettings.id}-theme-${siteSettings.themeToggleEnabled}-${siteSettings.defaultTheme}`}
+          siteSettings={siteSettings}
+        />
 
         <div className="grid w-full gap-6 lg:grid-cols-2">
           <AdminAuthForm

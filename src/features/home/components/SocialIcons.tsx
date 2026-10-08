@@ -124,7 +124,7 @@ export function SocialIcons({ links }: SocialIconsProps) {
               rel="noopener noreferrer"
               aria-label={label}
               title={label}
-              className="inline-flex h-8 w-8 items-center justify-center text-home-muted transition-colors hover:text-white"
+              className="inline-flex h-8 w-8 items-center justify-center text-home-muted transition-colors hover:text-home-heading"
             >
               <SocialPlatformIcon platform={link.platform} />
             </a>

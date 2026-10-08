@@ -48,7 +48,7 @@ function ContactMessageField({
 
   return (
     <div className="flex flex-col gap-2 sm:col-span-2">
-      <label htmlFor="contact-message" className="text-sm font-medium text-white">
+      <label htmlFor="contact-message" className="text-sm font-medium text-home-heading">
         Message
       </label>
       <textarea
@@ -61,7 +61,7 @@ function ContactMessageField({
         onChange={(event) => setCount(event.target.value.length)}
         aria-invalid={hasError}
         aria-describedby={[describedBy, counterId].filter(Boolean).join(' ') || undefined}
-        className="resize-y rounded-lg border border-white/15 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-home-muted focus:border-home-accent/50"
+        className="resize-y rounded-lg border border-home-input-border bg-home-input px-4 py-3 text-sm text-home-heading outline-none transition placeholder:text-home-muted focus:border-home-accent/50"
         placeholder="Tell me a bit about the project or opportunity."
       />
       <p
@@ -112,12 +112,16 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
         </div>
       ) : null}
 
-      <SectionHeading section={section} headingId="contact-heading" />
+      <SectionHeading
+        section={section}
+        headingId="contact-heading"
+        headingClassName="font-display text-3xl font-normal tracking-tight sm:text-4xl lg:text-[2.75rem]"
+      />
 
       <form
         key={formKey}
         action={formAction}
-        className="relative grid gap-5 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:grid-cols-2 sm:gap-6 sm:p-8"
+        className="contact-bento"
         noValidate
         aria-busy={isPending}
       >
@@ -133,7 +137,7 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
         </div>
 
         <div className="flex flex-col gap-2">
-          <label htmlFor="contact-name" className="text-sm font-medium text-white">
+          <label htmlFor="contact-name" className="text-sm font-medium text-home-heading">
             Name
           </label>
           <input
@@ -145,13 +149,13 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
             defaultValue={defaults.name}
             aria-invalid={hasError}
             aria-describedby={fieldDescribedBy}
-            className="rounded-lg border border-white/15 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-home-muted focus:border-home-accent/50"
+            className="rounded-lg border border-home-input-border bg-home-input px-4 py-3 text-sm text-home-heading outline-none transition placeholder:text-home-muted focus:border-home-accent/50"
             placeholder="Your name"
           />
         </div>
 
         <div className="flex flex-col gap-2">
-          <label htmlFor="contact-email" className="text-sm font-medium text-white">
+          <label htmlFor="contact-email" className="text-sm font-medium text-home-heading">
             Email
           </label>
           <input
@@ -163,7 +167,7 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
             defaultValue={defaults.email}
             aria-invalid={hasError}
             aria-describedby={fieldDescribedBy}
-            className="rounded-lg border border-white/15 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-home-muted focus:border-home-accent/50"
+            className="rounded-lg border border-home-input-border bg-home-input px-4 py-3 text-sm text-home-heading outline-none transition placeholder:text-home-muted focus:border-home-accent/50"
             placeholder="you@example.com"
           />
         </div>
@@ -171,7 +175,7 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
         <div className="flex flex-col gap-2 sm:col-span-2">
           <label
             htmlFor="contact-subject"
-            className="text-sm font-medium text-white"
+            className="text-sm font-medium text-home-heading"
           >
             Subject
           </label>
@@ -183,7 +187,7 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
             defaultValue={defaults.subject}
             aria-invalid={hasError}
             aria-describedby={fieldDescribedBy}
-            className="rounded-lg border border-white/15 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-home-muted focus:border-home-accent/50"
+            className="rounded-lg border border-home-input-border bg-home-input px-4 py-3 text-sm text-home-heading outline-none transition placeholder:text-home-muted focus:border-home-accent/50"
             placeholder="What is this about?"
           />
         </div>
@@ -199,7 +203,7 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
           challenge={activeChallenge}
           hasError={hasError}
           describedBy={fieldDescribedBy}
-          className="flex flex-col gap-2 sm:col-span-2 sm:max-w-xs"
+          className="-mt-2 flex flex-col gap-1.5 sm:col-span-2 sm:max-w-xs"
         />
 
         <div className="flex flex-col gap-4 sm:col-span-2 sm:flex-row sm:items-center sm:justify-end">
@@ -214,7 +218,7 @@ export function ContactSection({ section, challenge }: ContactSectionProps) {
             aria-label={isPending ? 'Sending message' : 'Send message'}
             aria-busy={isPending}
             disabled={isPending}
-            className="home-cta cursor-pointer rounded-lg bg-home-accent px-5 py-3 text-sm font-semibold text-home-ink transition disabled:cursor-not-allowed disabled:opacity-60"
+            className="home-cta cursor-pointer rounded-full bg-home-accent px-6 py-3 text-sm font-semibold text-home-ink transition disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isPending ? 'Sending…' : 'Send message'}
           </button>

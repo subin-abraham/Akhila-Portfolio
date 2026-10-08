@@ -12,6 +12,8 @@ export default async function AdminSettingsRoute() {
         id: siteSettings.id,
         blogEnabled: siteSettings.blogEnabled,
         caseStudiesEnabled: siteSettings.caseStudiesEnabled,
+        themeToggleEnabled: siteSettings.themeToggleEnabled,
+        defaultTheme: siteSettings.defaultTheme,
       }}
     />
   );

@@ -1,6 +1,9 @@
+export type { AboutSectionProps } from '@/types/components/about-section';
 export type { HomePageProps } from '@/types/components/home-page';
 export type { HeroSectionProps } from '@/types/components/hero-section';
+export type { SidePanelProps } from '@/types/components/side-panel';
 export type { SiteHeaderProps } from '@/types/components/site-header';
+export type { SiteShellData, SiteShellProps } from '@/types/components/site-shell';
 export type { SocialIconProps, SocialIconsProps } from '@/types/components/social-icons';
 export type {
   CompanyRowProps,
@@ -8,6 +11,7 @@ export type {
 } from '@/types/components/worked-with-section';
 export type { ProfessionalJourneySectionProps } from '@/types/components/professional-journey-section';
 export type { EducationSectionProps } from '@/types/components/education-section';
+export type { ShippedWorksCardProps } from '@/types/components/shipped-works-card';
 export type {
   CaseStudiesPageData,
   CaseStudiesPageProps,

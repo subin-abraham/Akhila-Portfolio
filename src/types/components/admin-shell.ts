@@ -32,6 +32,8 @@ export interface SettingsPageProps {
     id: string;
     blogEnabled: boolean;
     caseStudiesEnabled: boolean;
+    themeToggleEnabled: boolean;
+    defaultTheme: 'light' | 'dark' | 'system';
   };
 }
 
